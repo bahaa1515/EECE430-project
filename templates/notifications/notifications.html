@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-header-row">
+  <div>
+    <h1 class="page-header">Notifications</h1>
+    <p class="page-subtitle">Each user has an independent read state, so this list reflects your own status only.</p>
+  </div>
+  {% if request.user.is_coach %}
+  <a href="?{% if querystring %}{{ querystring }}&{% endif %}add=1" class="btn btn-blue">Create Notification</a>
+  {% endif %}
+</div>
+
+{% if show_add and request.user.is_coach %}
+<div class="form-page-card notifications-create-card">
+  <div class="section-header">
+    <div>
+      <h2 class="section-title">Post a Team Notification</h2>
+      <p class="section-subtitle">The notification will be created once and tracked per user through recipient records.</p>
+    </div>
+  </div>
+  <form method="post">
+    {% csrf_token %}
+    {% if form.non_field_errors %}
+    <div class="alert-error">{{ form.non_field_errors|join:", " }}</div>
+    {% endif %}
+    <div class="form-grid-2">
+      <div class="form-group full-width">
+        <label for="{{ form.title.id_for_label }}">Title{% if form.title.field.required %}<span class="required-star">*</span>{% endif %}</label>
+        {{ form.title }}
+        {{ form.title.errors }}
+      </div>
+      <div class="form-group full-width">
+        <label for="{{ form.description.id_for_label }}">Description{% if form.description.field.required %}<span class="required-star">*</span>{% endif %}</label>
+        {{ form.description }}
+        {{ form.description.errors }}
+      </div>
+      <div class="form-group">
+        <label for="{{ form.action.id_for_label }}">Primary action{% if form.action.field.required %}<span class="required-star">*</span>{% endif %}</label>
+        {{ form.action }}
+        {{ form.action.errors }}
+      </div>
+    </div>
+    <div class="form-actions">
+      <a href="{% url 'notifications' %}" class="btn btn-primary">Cancel</a>
+      <button type="submit" class="btn btn-green">Post Notification</button>
+    </div>
+  </form>
+</div>
+{% endif %}
+
+<div class="card filter-card">
+  <form method="get" class="filters-inline">
+    <div class="filter-field wide">
+      <label for="id_q">Search</label>
+      <input id="id_q" type="text" name="q" class="form-input" value="{{ query }}" placeholder="Search title or description">
+    </div>
+    <div class="filter-field">
+      <label for="id_filter">Status</label>
+      <select id="id_filter" name="filter" class="form-select">
+        <option value="">All</option>
+        <option value="Unread" {% if filter_status == 'Unread' %}selected{% endif %}>Unread</option>
+        <option value="Read" {% if filter_status == 'Read' %}selected{% endif %}>Read</option>
+      </select>
+    </div>
+    <div class="filter-actions">
+      <button type="submit" class="btn btn-blue">Apply</button>
+      <a href="{% url 'notifications' %}" class="btn btn-primary">Reset</a>
+    </div>
+  </form>
+</div>
+
+<div class="notifications-grid">
+  {% for item in notifications %}
+  <div class="notif-card">
+    {% if not item.is_read %}<div class="notif-unread-dot"></div>{% endif %}
+    <div class="notif-title">{{ item.notification.title }}</div>
+    {% if item.notification.description %}
+    <div class="notif-description">{{ item.notification.description }}</div>
+    {% endif %}
+    <div class="notif-meta">Posted {{ item.notification.created_at|date:"D, M d, Y | H:i" }}</div>
+    <div class="notif-meta">Action: <strong>{{ item.notification.action }}</strong></div>
+    <div class="notif-meta">
+      Status:
+      <span class="{% if item.is_read %}status-good-text{% else %}status-danger-text{% endif %}">
+        {% if item.is_read %}Read{% else %}Unread{% endif %}
+      </span>
+    </div>
+    {% if item.notification.created_by %}
+    <div class="notif-meta">Posted by {{ item.notification.created_by.get_full_name|default:item.notification.created_by.username }}</div>
+    {% endif %}
+    <div class="notif-actions">
+      <form method="post" action="{% url 'notification_action' item.notification.id %}">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="{% if item.is_read %}mark_unread{% else %}read{% endif %}">
+        <button type="submit" class="btn btn-primary btn-sm">{% if item.is_read %}Mark Unread{% else %}Mark Read{% endif %}</button>
+      </form>
+    </div>
+  </div>
+  {% empty %}
+  <div class="card empty-state-card">No notifications matched your filters.</div>
+  {% endfor %}
+</div>
+
+<div class="pagination">
+  {% if notifications.has_previous %}
+  <a href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ notifications.previous_page_number }}" class="page-btn">Previous</a>
+  {% else %}
+  <span class="page-btn disabled">Previous</span>
+  {% endif %}
+  {% for num in paginator.page_range %}
+    {% if num == notifications.number %}
+    <span class="page-btn active">{{ num }}</span>
+    {% else %}
+    <a href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ num }}" class="page-btn">{{ num }}</a>
+    {% endif %}
+  {% endfor %}
+  {% if notifications.has_next %}
+  <a href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ notifications.next_page_number }}" class="page-btn">Next</a>
+  {% else %}
+  <span class="page-btn disabled">Next</span>
+  {% endif %}
+</div>
+{% endblock %}

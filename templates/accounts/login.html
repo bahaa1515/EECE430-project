@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AUB Varsity Volleyball - Login</title>
+<link rel="stylesheet" href="/static/css/main.css">
+</head>
+<body>
+<div class="login-page">
+  <span class="login-label">Login only with AUB credentials | {{ role|capfirst }}</span>
+  <div class="login-card">
+
+    <div class="login-logo">
+      <div style="width:44px;height:44px;background:var(--aub-maroon);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <svg viewBox="0 0 32 32" width="28" height="28">
+          <circle cx="16" cy="16" r="13" fill="none" stroke="white" stroke-width="1.5"/>
+          <text x="16" y="20" text-anchor="middle" font-size="8" font-weight="bold" font-family="Georgia,serif" fill="white">AUB</text>
+        </svg>
+      </div>
+      <span class="login-logo-text">Please enter your AUB credentials</span>
+    </div>
+
+    <div class="login-title">Welcome to AUB volleyball</div>
+
+    <div class="role-tabs">
+      <button type="button" class="role-tab {% if role == 'student' %}active{% endif %}" onclick="setRole('student',this)">Student</button>
+      <button type="button" class="role-tab {% if role == 'coach' %}active{% endif %}" onclick="setRole('coach',this)">Coach</button>
+    </div>
+
+    {% if messages %}
+      <div class="toast-stack login-toast-stack" data-toast-stack>
+      {% for msg in messages %}
+      <div class="toast toast-error" data-toast>
+        <div class="toast-body">{{ msg }}</div>
+        <button type="button" class="toast-close" data-toast-close aria-label="Dismiss notification">×</button>
+      </div>
+      {% endfor %}
+      </div>
+    {% endif %}
+
+    <form method="post" autocomplete="on">
+      {% csrf_token %}
+      <input type="hidden" name="role" id="roleInput" value="{{ role }}">
+      <div class="login-field">
+        <label for="login-email">AUB email<span class="required-star">*</span></label>
+      </div>
+      <input id="login-email" type="email" name="email" class="form-input" placeholder="AUB email" value="{{ request.POST.email }}" required autocomplete="email">
+      <div class="login-field">
+        <label for="login-password">AUB password<span class="required-star">*</span></label>
+      </div>
+      <input id="login-password" type="password" name="password" class="form-input" placeholder="AUB password" required autocomplete="current-password">
+      <div class="remember-row">
+        <label class="remember-label">
+          <input type="checkbox" name="remember_me" {% if request.POST.remember_me %}checked{% endif %}>
+          Remember for 30 days
+        </label>
+      </div>
+      <button type="submit" class="btn-login">Login</button>
+    </form>
+
+    <div style="text-align:center;margin-top:18px;font-size:13px;color:var(--gray-500);">
+      Don't have an account?
+      <a href="/signup/?role={{ role }}" style="color:var(--blue);font-weight:600;text-decoration:none;">Sign up</a>
+    </div>
+
+  </div>
+</div>
+<script>
+function setRole(r, btn) {
+  document.getElementById('roleInput').value = r;
+  document.querySelectorAll('.role-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+document.querySelectorAll('[data-toast]').forEach(function (toast, index) {
+  window.setTimeout(function () {
+    toast.classList.add('is-visible');
+  }, index * 100);
+
+  window.setTimeout(function () {
+    toast.classList.add('is-hiding');
+    window.setTimeout(function () {
+      toast.remove();
+    }, 260);
+  }, 3600 + index * 150);
+});
+
+document.querySelectorAll('[data-toast-close]').forEach(function (button) {
+  button.addEventListener('click', function () {
+    var toast = button.closest('[data-toast]');
+    if (!toast) {
+      return;
+    }
+    toast.classList.add('is-hiding');
+    window.setTimeout(function () {
+      toast.remove();
+    }, 260);
+  });
+});
+</script>
+</body>
+</html>

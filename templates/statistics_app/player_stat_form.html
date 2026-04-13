@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-header-row">
+  <div>
+    <h1 class="page-header">{{ page_title }}</h1>
+    <p class="page-subtitle">Record or adjust player match logs so the statistics page reflects real stored results.</p>
+  </div>
+</div>
+
+<div class="form-page-card">
+  <form method="post">
+    {% csrf_token %}
+    {% if form.non_field_errors %}
+    <div class="toast toast-error is-visible" style="position:static;transform:none;opacity:1;box-shadow:none;">
+      <div class="toast-body">{{ form.non_field_errors|join:", " }}</div>
+    </div>
+    {% endif %}
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label for="{{ form.player.id_for_label }}">Player{% if form.player.field.required %}<span class="required-star">*</span>{% endif %}</label>
+        {{ form.player }}
+        {{ form.player.errors }}
+      </div>
+      <div class="form-group">
+        <label for="{{ form.date.id_for_label }}">Date{% if form.date.field.required %}<span class="required-star">*</span>{% endif %}</label>
+        {{ form.date }}
+        {{ form.date.errors }}
+      </div>
+      <div class="form-group full-width">
+        <label for="{{ form.opponent.id_for_label }}">Opponent / Session{% if form.opponent.field.required %}<span class="required-star">*</span>{% endif %}</label>
+        {{ form.opponent }}
+        {{ form.opponent.errors }}
+      </div>
+      <div class="form-group">
+        <label for="{{ form.kills.id_for_label }}">Kills{% if form.kills.field.required %}<span class="required-star">*</span>{% endif %}</label>
+        {{ form.kills }}
+        {{ form.kills.errors }}
+      </div>
+      <div class="form-group">
+        <label for="{{ form.blocks.id_for_label }}">Blocks{% if form.blocks.field.required %}<span class="required-star">*</span>{% endif %}</label>
+        {{ form.blocks }}
+        {{ form.blocks.errors }}
+      </div>
+      <div class="form-group">
+        <label for="{{ form.aces.id_for_label }}">Aces{% if form.aces.field.required %}<span class="required-star">*</span>{% endif %}</label>
+        {{ form.aces }}
+        {{ form.aces.errors }}
+      </div>
+      <div class="form-group checkbox-row">
+        <label for="{{ form.mvp.id_for_label }}">MVP flag{% if form.mvp.field.required %}<span class="required-star">*</span>{% endif %}</label>
+        <div>{{ form.mvp }} {{ form.mvp.errors }}</div>
+      </div>
+    </div>
+    <div class="form-actions">
+      <a href="{% url 'statistics' %}" class="btn btn-primary">Cancel</a>
+      <button type="submit" class="btn btn-blue">{{ submit_label }}</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

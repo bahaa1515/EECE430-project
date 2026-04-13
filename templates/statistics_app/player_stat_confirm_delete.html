@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-header-row">
+  <div>
+    <h1 class="page-header">Delete Match Stats</h1>
+    <p class="page-subtitle">Remove this recorded match log if it was entered incorrectly.</p>
+  </div>
+</div>
+
+<div class="confirm-page-card">
+  <div class="section-header">
+    <div>
+      <h2 class="section-title">{{ stat.player.name }} vs {{ stat.opponent }}</h2>
+      <p class="section-subtitle">{{ stat.date|date:"M d, Y" }} | {{ stat.kills }} kills, {{ stat.blocks }} blocks, {{ stat.aces }} aces</p>
+    </div>
+  </div>
+  <div class="info-note">Deleting this match log will immediately change the computed leaderboards and player summaries.</div>
+  <form method="post">
+    {% csrf_token %}
+    <div class="form-actions">
+      <a href="{% url 'statistics' %}" class="btn btn-primary">Cancel</a>
+      <button type="submit" class="btn btn-red">Delete Match Stats</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

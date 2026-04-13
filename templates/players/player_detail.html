@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-header-row">
+  <div>
+    <h1 class="page-header">{{ player.name }}</h1>
+    <p class="page-subtitle">Player profile with live match stats where available and manual roster totals where they are maintained.</p>
+  </div>
+  <div class="table-actions">
+    {% if request.user.is_coach %}
+    <a href="{% url 'player_stat_create' %}?player={{ player.id }}" class="btn btn-green">Add Match Log</a>
+    <a href="{% url 'player_edit' player.id %}" class="btn btn-blue">Edit Player</a>
+    {% endif %}
+    <a href="{% url 'players' %}" class="btn btn-primary">Back to Roster</a>
+  </div>
+</div>
+
+<div class="player-detail-layout">
+  <div class="card player-profile-card">
+    <div class="player-profile-head">
+      <div>
+        <div class="table-meta">{{ player.get_position_display }} | #{{ player.jersey_number }}</div>
+        <div class="profile-title">{{ player.name }}</div>
+        <div class="table-meta">{{ player.player_type }}</div>
+      </div>
+      {% if player.photo %}
+      <img src="{{ player.photo.url }}" alt="{{ player.name }}" class="profile-photo">
+      {% else %}
+      <div class="profile-photo placeholder-photo">No Photo</div>
+      {% endif %}
+    </div>
+    <div class="info-note">
+      {% if live_totals.matches %}
+      Live match totals below are computed from recorded player match entries.
+      {% else %}
+      No match logs have been recorded yet, so the profile totals below are currently manual roster values.
+      {% endif %}
+    </div>
+    <div class="summary-grid compact">
+      <div class="summary-card"><div class="summary-label">Points</div><div class="summary-value">{{ player.points }}</div></div>
+      <div class="summary-card"><div class="summary-label">Kills</div><div class="summary-value">{{ player.kills }}</div></div>
+      <div class="summary-card"><div class="summary-label">Blocks</div><div class="summary-value">{{ player.blocks }}</div></div>
+      <div class="summary-card"><div class="summary-label">Aces</div><div class="summary-value">{{ player.aces }}</div></div>
+    </div>
+    <div class="detail-list">
+      <div class="detail-row"><span>Attack %</span><strong>{{ player.attack_pct }}%</strong></div>
+      <div class="detail-row"><span>Perfect reception %</span><strong>{{ player.perfect_recv_pct }}%</strong></div>
+      <div class="detail-row"><span>Digs</span><strong>{{ player.digs }}</strong></div>
+      <div class="detail-row"><span>Assists</span><strong>{{ player.assists }}</strong></div>
+      <div class="detail-row"><span>Linked account</span><strong>{{ player.user.username|default:"Not linked" }}</strong></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-header">
+      <div>
+        <h2 class="section-title">Computed Match Summary</h2>
+        <p class="section-subtitle">These values come directly from recorded player match logs.</p>
+      </div>
+    </div>
+    <div class="detail-list">
+      <div class="detail-row"><span>Recorded matches</span><strong>{{ live_totals.matches|default:0 }}</strong></div>
+      <div class="detail-row"><span>Recorded kills</span><strong>{{ live_totals.kills|default:0 }}</strong></div>
+      <div class="detail-row"><span>Recorded blocks</span><strong>{{ live_totals.blocks|default:0 }}</strong></div>
+      <div class="detail-row"><span>Recorded aces</span><strong>{{ live_totals.aces|default:0 }}</strong></div>
+      <div class="detail-row"><span>MVP flags</span><strong>{{ live_totals.mvp_awards|default:0 }}</strong></div>
+    </div>
+    {% if attendance_summary %}
+    <div class="section-header space-top">
+      <div>
+        <h2 class="section-title">Attendance Summary</h2>
+        <p class="section-subtitle">This section is computed from coach-verified attendance tied to the linked student account.</p>
+      </div>
+    </div>
+    <div class="detail-list">
+      <div class="detail-row"><span>Total official decisions</span><strong>{{ attendance_summary.total }}</strong></div>
+      <div class="detail-row"><span>Present / Late</span><strong>{{ attendance_summary.attending }}</strong></div>
+      <div class="detail-row"><span>Absent</span><strong>{{ attendance_summary.missed }}</strong></div>
+      <div class="detail-row"><span>Pending review</span><strong>{{ attendance_summary.pending }}</strong></div>
+      <div class="detail-row"><span>Excused</span><strong>{{ attendance_summary.excused }}</strong></div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<div class="card">
+  <div class="section-header">
+    <div>
+      <h2 class="section-title">Recent Match Logs</h2>
+      <p class="section-subtitle">Recorded performance entries from the statistics app.</p>
+    </div>
+  </div>
+  <div class="table-responsive">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Opponent</th>
+          <th>Kills</th>
+          <th>Blocks</th>
+          <th>Aces</th>
+          <th>MVP</th>
+          {% if request.user.is_coach %}<th>Actions</th>{% endif %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for stat in stats %}
+        <tr>
+          <td>{{ stat.date|date:"M d, Y" }}</td>
+          <td>{{ stat.opponent }}</td>
+          <td>{{ stat.kills }}</td>
+          <td>{{ stat.blocks }}</td>
+          <td>{{ stat.aces }}</td>
+          <td>{% if stat.mvp %}Yes{% else %}No{% endif %}</td>
+          {% if request.user.is_coach %}
+          <td>
+            <div class="table-actions">
+              <a href="{% url 'player_stat_edit' stat.id %}" class="btn btn-primary btn-sm">Edit</a>
+              <a href="{% url 'player_stat_delete' stat.id %}" class="btn btn-red btn-sm">Delete</a>
+            </div>
+          </td>
+          {% endif %}
+        </tr>
+        {% empty %}
+        <tr><td colspan="{% if request.user.is_coach %}7{% else %}6{% endif %}" class="empty-cell">No recorded match statistics are available for this player yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

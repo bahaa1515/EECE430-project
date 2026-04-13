@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-header-row">
+  <div>
+    <h1 class="page-header">My Attendance</h1>
+    <p class="page-subtitle">Send your availability response before the session. Official attendance is recorded separately by the coach.</p>
+  </div>
+</div>
+
+<div class="stats-row">
+  <div class="stat-card">
+    <div class="stat-number green">{{ matches_attended }}</div>
+    <div class="stat-label">Coach-Verified Present</div>
+    <div class="progress-bar"><div class="progress-fill green" style="width:{{ attended_pct }}%"></div></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-number red">{{ matches_missed }}</div>
+    <div class="stat-label">Coach-Verified Absent</div>
+    <div class="progress-bar"><div class="progress-fill red" style="width:{{ missed_pct }}%"></div></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-number green">{{ hours_attended }}</div>
+    <div class="stat-label">Verified Hours Present</div>
+    <div class="progress-bar"><div class="progress-fill green" style="width:{{ hours_attended_pct }}%"></div></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-number">{{ matches_excused }}</div>
+    <div class="stat-label">Excused Sessions</div>
+    <div class="progress-bar"><div class="progress-fill red" style="width:{{ hours_missed_pct }}%"></div></div>
+  </div>
+</div>
+
+<div class="card filter-card">
+  <form method="get" class="filters-inline">
+    <div class="filter-field wide">
+      <label for="id_q">Search title</label>
+      <input id="id_q" type="text" name="q" class="form-input" value="{{ query }}" placeholder="Search by title">
+    </div>
+    <div class="filter-field">
+      <label for="id_filter">Session type</label>
+      <select id="id_filter" name="filter" class="form-select">
+        <option value="">All types</option>
+        <option value="Match" {% if filter_type == 'Match' %}selected{% endif %}>Match</option>
+        <option value="Practice" {% if filter_type == 'Practice' %}selected{% endif %}>Practice</option>
+      </select>
+    </div>
+    <div class="filter-actions">
+      <button type="submit" class="btn btn-blue">Apply</button>
+      <a href="{% url 'attendance' %}" class="btn btn-primary">Reset</a>
+    </div>
+  </form>
+</div>
+
+<div class="match-grid">
+  {% for item in match_data %}
+  <div class="match-card">
+    <div class="match-card-header">
+      <div>
+        <div class="match-card-title">{{ item.match.title }}</div>
+        <div class="match-meta">{{ item.match.match_type }} | {{ item.match.date|date:"D, M d, Y | g:i A" }}</div>
+      </div>
+      <span class="status-badge status-{{ item.match.status|slugify }}">{{ item.match.get_status_display }}</span>
+    </div>
+    <div class="match-meta">Location: <strong>{{ item.match.location }}</strong></div>
+    <div class="match-meta">Coach: <strong>{{ item.match.coach.get_full_name|default:"Coach" }}</strong></div>
+    <div class="match-meta">Duration: <strong>{{ item.match.duration_hours }} hour{% if item.match.duration_hours != 1 %}s{% endif %}</strong></div>
+    <div class="match-meta">
+      Your RSVP:
+      <strong class="{% if item.record and item.record.response == 'Available' %}status-good-text{% elif item.record and item.record.response == 'Unavailable' %}status-danger-text{% else %}status-muted-text{% endif %}">
+        {{ item.record.response|default:"No Response" }}
+      </strong>
+    </div>
+    <div class="match-meta">
+      Official attendance:
+      <strong class="{% if item.record and item.record.official_status == 'Present' or item.record and item.record.official_status == 'Late' %}status-good-text{% elif item.record and item.record.official_status == 'Absent' %}status-danger-text{% else %}status-muted-text{% endif %}">
+        {{ item.record.official_status|default:"Pending Review" }}
+      </strong>
+    </div>
+    {% if item.match.confirmation_closes %}
+    <div class="match-meta subtle">Confirmation closes {{ item.match.confirmation_closes|timeuntil }}</div>
+    {% endif %}
+
+    {% if item.match.status == 'Cancelled' or item.match.status == 'Completed' %}
+    <div class="info-note compact-note">This session is {{ item.match.status|lower }}, so attendance can no longer be changed.</div>
+    {% else %}
+    <div class="attendance-buttons stacked">
+      <form method="post" action="{% url 'mark_attendance' item.match.id %}">
+        {% csrf_token %}
+        <input type="hidden" name="response" value="Available">
+        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+        <button class="att-btn attending" type="submit">Available</button>
+      </form>
+      <form method="post" action="{% url 'mark_attendance' item.match.id %}">
+        {% csrf_token %}
+        <input type="hidden" name="response" value="Unavailable">
+        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+        <button class="att-btn not-attending" type="submit">Unavailable</button>
+      </form>
+      <form method="post" action="{% url 'mark_attendance' item.match.id %}">
+        {% csrf_token %}
+        <input type="hidden" name="response" value="No Response">
+        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+        <button class="att-btn pending" type="submit">No Response</button>
+      </form>
+    </div>
+    {% endif %}
+  </div>
+  {% empty %}
+  <div class="card empty-state-card">No sessions matched your search.</div>
+  {% endfor %}
+</div>
+
+<div class="pagination">
+  {% if matches_page.has_previous %}
+  <a href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ matches_page.previous_page_number }}" class="page-btn">Previous</a>
+  {% else %}
+  <span class="page-btn disabled">Previous</span>
+  {% endif %}
+  {% for num in paginator.page_range %}
+    {% if num == matches_page.number %}
+    <span class="page-btn active">{{ num }}</span>
+    {% else %}
+    <a href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ num }}" class="page-btn">{{ num }}</a>
+    {% endif %}
+  {% endfor %}
+  {% if matches_page.has_next %}
+  <a href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ matches_page.next_page_number }}" class="page-btn">Next</a>
+  {% else %}
+  <span class="page-btn disabled">Next</span>
+  {% endif %}
+</div>
+{% endblock %}

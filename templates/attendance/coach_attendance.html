@@ -1,0 +1,235 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-header-row">
+  <div>
+    <h1 class="page-header">Attendance Management</h1>
+    <p class="page-subtitle">Student responses are shown for planning, but official attendance is set here by the coach and drives the metrics.</p>
+  </div>
+  <a href="{% url 'match_create' %}" class="btn btn-blue">Create Match / Practice</a>
+</div>
+
+<div class="summary-grid">
+  <div class="summary-card">
+    <div class="summary-label">Total Sessions</div>
+    <div class="summary-value">{{ summary_cards.total_matches }}</div>
+  </div>
+  <div class="summary-card">
+    <div class="summary-label">Upcoming Sessions</div>
+    <div class="summary-value">{{ summary_cards.upcoming_matches }}</div>
+  </div>
+  <div class="summary-card">
+    <div class="summary-label">Completed Sessions</div>
+    <div class="summary-value">{{ summary_cards.completed_matches }}</div>
+  </div>
+  <div class="summary-card">
+    <div class="summary-label">Response Rate</div>
+    <div class="summary-value">{{ summary_cards.response_rate }}%</div>
+  </div>
+</div>
+
+<div class="card filter-card">
+  <div class="section-header">
+    <div>
+      <h2 class="section-title">Find Sessions</h2>
+      <p class="section-subtitle">Filters combine with search and pagination, so every control here performs a real backend filter.</p>
+    </div>
+  </div>
+  <form method="get" class="filters-grid">
+    <div class="filter-field">
+      <label for="id_q">Search title</label>
+      <input id="id_q" type="text" name="q" class="form-input" value="{{ filters.q }}" placeholder="Search by title">
+    </div>
+    <div class="filter-field">
+      <label for="id_location">Location</label>
+      <select id="id_location" name="location" class="form-select">
+        <option value="">All locations</option>
+        {% for location in location_choices %}
+        <option value="{{ location }}" {% if filters.location == location %}selected{% endif %}>{{ location }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="filter-field">
+      <label for="id_duration">Duration</label>
+      <select id="id_duration" name="duration" class="form-select">
+        <option value="">Any duration</option>
+        {% for duration in duration_choices %}
+        <option value="{{ duration }}" {% if filters.duration == duration|stringformat:"s" %}selected{% endif %}>{{ duration }} hour{% if duration != 1 %}s{% endif %}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="filter-field">
+      <label for="id_match_type">Type</label>
+      <select id="id_match_type" name="match_type" class="form-select">
+        <option value="">All types</option>
+        <option value="Match" {% if filters.match_type == 'Match' %}selected{% endif %}>Match</option>
+        <option value="Practice" {% if filters.match_type == 'Practice' %}selected{% endif %}>Practice</option>
+      </select>
+    </div>
+    <div class="filter-field">
+      <label for="id_status">Status</label>
+      <select id="id_status" name="status" class="form-select">
+        <option value="">All statuses</option>
+        <option value="Upcoming" {% if filters.status == 'Upcoming' %}selected{% endif %}>Upcoming</option>
+        <option value="Completed" {% if filters.status == 'Completed' %}selected{% endif %}>Completed</option>
+        <option value="Cancelled" {% if filters.status == 'Cancelled' %}selected{% endif %}>Cancelled</option>
+        <option value="Postponed" {% if filters.status == 'Postponed' %}selected{% endif %}>Postponed</option>
+        <option value="Problem" {% if filters.status == 'Problem' %}selected{% endif %}>Problem / Needs Attention</option>
+      </select>
+    </div>
+    <div class="filter-field">
+      <label for="id_date_from">Date from</label>
+      <input id="id_date_from" type="date" name="date_from" class="form-input" value="{{ filters.date_from }}">
+    </div>
+    <div class="filter-field">
+      <label for="id_date_to">Date to</label>
+      <input id="id_date_to" type="date" name="date_to" class="form-input" value="{{ filters.date_to }}">
+    </div>
+    <div class="filter-actions">
+      <button type="submit" class="btn btn-blue">Apply Filters</button>
+      <a href="{% url 'attendance' %}" class="btn btn-primary">Reset</a>
+    </div>
+  </form>
+</div>
+
+{% if selected_match %}
+<div class="card management-card attendance-management-card">
+  <div class="section-header">
+    <div>
+      <h2 class="section-title">Manage {{ selected_match.title }}</h2>
+      <p class="section-subtitle">{{ selected_match.match_type }} on {{ selected_match.date|date:"D, M d, Y | g:i A" }} at {{ selected_match.location }}</p>
+    </div>
+    <span class="status-badge status-{{ selected_match.status|slugify }}">{{ selected_match.get_status_display }}</span>
+  </div>
+  <form method="post" action="{% url 'update_match_attendance' selected_match.id %}">
+    {% csrf_token %}
+    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+    <div class="table-responsive">
+      <table class="data-table management-table">
+        <thead>
+          <tr>
+            <th>Player Account</th>
+            <th>Linked Roster Entry</th>
+            <th>Student RSVP</th>
+            <th>Attendance Rate</th>
+            <th>Total Records</th>
+            <th>Official Status for This Session</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in player_rows %}
+          <tr>
+            <td>
+              <div class="table-title">{{ row.user.get_full_name|default:row.user.username }}</div>
+              <div class="table-meta">{{ row.user.username }}</div>
+            </td>
+            <td>
+              {% if row.linked_player %}
+              <a href="{% url 'player_detail' row.linked_player.id %}" class="table-link">{{ row.linked_player.name }}</a>
+              {% else %}
+              <span class="table-meta">No linked roster player</span>
+              {% endif %}
+            </td>
+            <td>
+              <span class="{% if row.response == 'Available' %}status-good-text{% elif row.response == 'Unavailable' %}status-danger-text{% else %}status-muted-text{% endif %}">
+                {{ row.response }}
+              </span>
+            </td>
+            <td>
+              {% if row.attendance_pct is not None %}
+              <span class="status-badge {% if row.attendance_pct >= 75 %}status-good{% else %}status-warning{% endif %}">{{ row.attendance_pct }}%</span>
+              {% else %}
+              <span class="table-meta">No history yet</span>
+              {% endif %}
+            </td>
+            <td>{{ row.summary.total }}</td>
+            <td>
+              <select name="player_{{ row.user.id }}" class="form-select attendance-select">
+                <option value="Present" {% if row.official_status == 'Present' %}selected{% endif %}>Present</option>
+                <option value="Absent" {% if row.official_status == 'Absent' %}selected{% endif %}>Absent</option>
+                <option value="Late" {% if row.official_status == 'Late' %}selected{% endif %}>Late</option>
+                <option value="Excused" {% if row.official_status == 'Excused' %}selected{% endif %}>Excused</option>
+                <option value="Pending Review" {% if row.official_status == 'Pending Review' %}selected{% endif %}>Pending Review</option>
+              </select>
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="6" class="empty-cell">No student accounts are available to manage.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn btn-green">Save Attendance</button>
+    </div>
+  </form>
+</div>
+{% endif %}
+
+<div class="card">
+  <div class="section-header">
+    <div>
+      <h2 class="section-title">Sessions</h2>
+      <p class="section-subtitle">Select a session to manage attendance, or edit and delete it from the same table.</p>
+    </div>
+  </div>
+  <div class="table-responsive">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>Date</th>
+          <th>Type</th>
+          <th>Status</th>
+          <th>Location</th>
+          <th>Attendance</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in match_rows %}
+        <tr>
+          <td>
+            <div class="table-title">{{ row.match.title }}</div>
+            <div class="table-meta">{{ row.match.duration_hours }} hour{% if row.match.duration_hours != 1 %}s{% endif %}</div>
+          </td>
+          <td>{{ row.match.date|date:"D, M d, Y | g:i A" }}</td>
+          <td>{{ row.match.match_type }}</td>
+          <td><span class="status-badge status-{{ row.match.status|slugify }}">{{ row.match.get_status_display }}</span></td>
+          <td>{{ row.match.location }}</td>
+          <td>{{ row.present }} present / {{ row.absent }} absent / {{ row.late }} late / {{ row.excused }} excused / {{ row.pending_review }} pending</td>
+          <td>
+            <div class="table-actions">
+              <a href="?{% if querystring %}{{ querystring }}&{% endif %}match={{ row.match.id }}&manage=1" class="btn btn-primary btn-sm">Manage</a>
+              <a href="{% url 'match_edit' row.match.id %}" class="btn btn-primary btn-sm">Edit</a>
+              <a href="{% url 'match_delete' row.match.id %}" class="btn btn-red btn-sm">Delete</a>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="7" class="empty-cell">No sessions matched the current filters.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="pagination">
+  {% if matches_page.has_previous %}
+  <a href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ matches_page.previous_page_number }}" class="page-btn">Previous</a>
+  {% else %}
+  <span class="page-btn disabled">Previous</span>
+  {% endif %}
+  {% for num in paginator.page_range %}
+    {% if num == matches_page.number %}
+    <span class="page-btn active">{{ num }}</span>
+    {% else %}
+    <a href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ num }}" class="page-btn">{{ num }}</a>
+    {% endif %}
+  {% endfor %}
+  {% if matches_page.has_next %}
+  <a href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ matches_page.next_page_number }}" class="page-btn">Next</a>
+  {% else %}
+  <span class="page-btn disabled">Next</span>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,191 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-header-row">
+  <div>
+    <h1 class="page-header">Team Statistics</h1>
+    <p class="page-subtitle">This page separates live computed data from manual season metrics so the numbers stay honest.</p>
+  </div>
+  {% if request.user.is_coach %}
+  <a href="{% url 'player_stat_create' %}" class="btn btn-blue">Record Match Stats</a>
+  {% endif %}
+</div>
+
+<div class="info-note">
+  Computed sections below are generated from matches, coach-verified attendance records, and recorded player match logs. Student RSVP responses are not used for official attendance percentages.
+</div>
+
+<div class="summary-grid">
+  <div class="summary-card"><div class="summary-label">Active Players</div><div class="summary-value">{{ computed_summary.active_players }}</div></div>
+  <div class="summary-card"><div class="summary-label">Starters</div><div class="summary-value">{{ computed_summary.starting_players }}</div></div>
+  <div class="summary-card"><div class="summary-label">Substitutes</div><div class="summary-value">{{ computed_summary.substitutes }}</div></div>
+  <div class="summary-card"><div class="summary-label">Completed Matches</div><div class="summary-value">{{ computed_summary.completed_matches }}</div></div>
+  <div class="summary-card"><div class="summary-label">Upcoming Matches</div><div class="summary-value">{{ computed_summary.upcoming_matches }}</div></div>
+  <div class="summary-card"><div class="summary-label">Status Issues</div><div class="summary-value">{{ computed_summary.status_issues }}</div></div>
+</div>
+
+<div class="statistics-layout">
+  <div class="card">
+    <div class="section-header">
+      <div>
+        <h2 class="section-title">Attendance Breakdown</h2>
+        <p class="section-subtitle">Computed from coach-verified attendance only.</p>
+      </div>
+    </div>
+    <div class="detail-list">
+      <div class="detail-row"><span>Total official decisions</span><strong>{{ attendance_breakdown.total }}</strong></div>
+      <div class="detail-row"><span>Present / Late</span><strong>{{ attendance_breakdown.attending }}</strong></div>
+      <div class="detail-row"><span>Absent</span><strong>{{ attendance_breakdown.not_attending }}</strong></div>
+      <div class="detail-row"><span>Pending review</span><strong>{{ attendance_breakdown.pending }}</strong></div>
+      <div class="detail-row"><span>Excused</span><strong>{{ attendance_breakdown.excused }}</strong></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-header">
+      <div>
+        <h2 class="section-title">Live Player Leaders</h2>
+        <p class="section-subtitle">Computed from recorded player match logs only.</p>
+      </div>
+    </div>
+    <div class="table-responsive">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Player</th>
+            <th>Matches</th>
+            <th>Kills</th>
+            <th>Blocks</th>
+            <th>Aces</th>
+            <th>MVP Flags</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for player in live_player_stats %}
+          <tr>
+            <td>{{ player.player__name }}</td>
+            <td>{{ player.matches }}</td>
+            <td>{{ player.kills|default:0 }}</td>
+            <td>{{ player.blocks|default:0 }}</td>
+            <td>{{ player.aces|default:0 }}</td>
+            <td>{{ player.mvp_awards }}</td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="6" class="empty-cell">No player match logs have been recorded yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="card" style="margin-bottom:20px;">
+  <div class="section-header">
+    <div>
+      <h2 class="section-title">Recent Match Logs</h2>
+      <p class="section-subtitle">These per-player match logs directly feed the live player leaders and player detail totals.</p>
+    </div>
+  </div>
+  <div class="table-responsive">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Player</th>
+          <th>Date</th>
+          <th>Opponent / Session</th>
+          <th>Kills</th>
+          <th>Blocks</th>
+          <th>Aces</th>
+          <th>MVP</th>
+          {% if request.user.is_coach %}<th>Actions</th>{% endif %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for stat_row in recent_match_logs %}
+        <tr>
+          <td><a href="{% url 'player_detail' stat_row.player.id %}" class="table-link">{{ stat_row.player.name }}</a></td>
+          <td>{{ stat_row.date|date:"M d, Y" }}</td>
+          <td>{{ stat_row.opponent }}</td>
+          <td>{{ stat_row.kills }}</td>
+          <td>{{ stat_row.blocks }}</td>
+          <td>{{ stat_row.aces }}</td>
+          <td>{% if stat_row.mvp %}Yes{% else %}No{% endif %}</td>
+          {% if request.user.is_coach %}
+          <td>
+            <div class="table-actions">
+              <a href="{% url 'player_stat_edit' stat_row.id %}" class="btn btn-primary btn-sm">Edit</a>
+              <a href="{% url 'player_stat_delete' stat_row.id %}" class="btn btn-red btn-sm">Delete</a>
+            </div>
+          </td>
+          {% endif %}
+        </tr>
+        {% empty %}
+        <tr><td colspan="{% if request.user.is_coach %}8{% else %}7{% endif %}" class="empty-cell">No player match logs have been recorded yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% if stat %}
+<div class="card">
+  <div class="section-header">
+    <div>
+      <h2 class="section-title">Manual Team Metrics</h2>
+      <p class="section-subtitle">These values come from the TeamStat model and are maintained manually.</p>
+    </div>
+  </div>
+
+  <div class="seasonal-table-wrapper">
+    <table class="seasonal-table">
+      <thead>
+        <tr>
+          <th></th>
+          <th>Games Played</th>
+          <th>Wins</th>
+          <th>Losses</th>
+          <th>Win %</th>
+          <th>Loss %</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Home</td>
+          <td>{{ stat.home_played }}</td>
+          <td>{{ stat.home_wins }}</td>
+          <td>{{ stat.home_losses }}</td>
+          <td><span class="pct-cell-green">{{ stat.home_win_pct }}%</span></td>
+          <td><span class="pct-cell-red">{{ stat.home_loss_pct }}%</span></td>
+        </tr>
+        <tr>
+          <td>Away</td>
+          <td>{{ stat.away_played }}</td>
+          <td>{{ stat.away_wins }}</td>
+          <td>{{ stat.away_losses }}</td>
+          <td><span class="pct-cell-green">{{ stat.away_win_pct }}%</span></td>
+          <td><span class="pct-cell-red">{{ stat.away_loss_pct }}%</span></td>
+        </tr>
+        <tr>
+          <td>Total</td>
+          <td>{{ stat.total_played }}</td>
+          <td>{{ stat.total_wins }}</td>
+          <td>{{ stat.total_losses }}</td>
+          <td><span class="pct-cell-green">{{ stat.total_win_pct }}%</span></td>
+          <td><span class="pct-cell-red">{{ stat.total_loss_pct }}%</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="detail-grid">
+    <div class="detail-card"><span>Attack Efficiency</span><strong>{{ stat.attack_efficiency_made }}/{{ stat.attack_efficiency_total }}</strong></div>
+    <div class="detail-card"><span>Block Success Rate</span><strong>{{ stat.block_success_rate }}%</strong></div>
+    <div class="detail-card"><span>Serve Efficiency</span><strong>{{ stat.serve_efficiency_made }}/{{ stat.serve_efficiency_total }}</strong></div>
+    <div class="detail-card"><span>Reception Accuracy</span><strong>{{ stat.reception_accuracy_made }}/{{ stat.reception_accuracy_total }}</strong></div>
+    <div class="detail-card"><span>Side-Out Efficiency</span><strong>{{ stat.side_out_made }}/{{ stat.side_out_total }}</strong></div>
+    <div class="detail-card"><span>Comeback Rate</span><strong>{{ stat.comeback_rate }}%</strong></div>
+  </div>
+</div>
+{% else %}
+<div class="card empty-state-card">No manual team metrics are stored yet.</div>
+{% endif %}
+{% endblock %}

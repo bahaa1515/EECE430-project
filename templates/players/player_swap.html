@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-header-row">
+  <div>
+    <h1 class="page-header">Swap Starter</h1>
+    <p class="page-subtitle">Choose the substitute who should replace {{ starter.name }} in the starting lineup.</p>
+  </div>
+</div>
+
+<div class="form-page-card">
+    <div class="info-note">Current starter: <strong>{{ starter.name }}</strong> (#{{ starter.jersey_number }}, {{ starter.get_position_display }})</div>
+  <form method="post">
+    {% csrf_token %}
+    <div class="form-group">
+      <label for="{{ form.replacement.id_for_label }}">Substitute to promote{% if form.replacement.field.required %}<span class="required-star">*</span>{% endif %}</label>
+      {{ form.replacement }}
+      {{ form.replacement.errors }}
+    </div>
+    <div class="form-actions">
+      <a href="{% url 'players' %}" class="btn btn-primary">Cancel</a>
+      <button type="submit" class="btn btn-blue">Confirm Swap</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

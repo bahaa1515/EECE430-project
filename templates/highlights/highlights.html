@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-header-row">
+  <div>
+    <h1 class="page-header">Highlights &amp; MVP</h1>
+    <p class="page-subtitle">Feature the latest highlight and MVP with the exact session clearly shown.</p>
+  </div>
+</div>
+
+{% if highlight %}
+<div class="card" style="margin-bottom:20px;">
+  <div class="highlight-card">
+    <div class="highlight-text">
+      <div class="highlight-title">{{ highlight.title }}</div>
+      {% if highlight.session %}
+      <div class="table-meta" style="margin-bottom:10px;">Session: {{ highlight.session.title }} | {{ highlight.session.date|date:"M d, Y | g:i A" }}</div>
+      {% endif %}
+      {% if highlight.score %}
+      <div style="display:inline-block;background:var(--gray-900);color:white;padding:4px 12px;border-radius:6px;font-weight:700;font-size:14px;margin-bottom:10px;">
+        {{ highlight.score }}
+      </div>
+      {% endif %}
+      <p style="font-size:14px;color:var(--gray-600);line-height:1.7;">{{ highlight.summary }}</p>
+    </div>
+    {% if highlight.image %}
+    <img src="{{ highlight.image.url }}" alt="{{ highlight.title }}" class="highlight-img">
+    {% else %}
+    <div class="highlight-img-placeholder">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="48" height="48"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% else %}
+<div class="card empty-state-card" style="margin-bottom:20px;">No highlights posted yet.</div>
+{% endif %}
+
+{% if mvp %}
+<div class="card">
+  <h3 style="font-size:14px;color:var(--gray-500);font-weight:600;margin-bottom:4px;">Team Most Valuable Player</h3>
+  {% if mvp.session %}
+  <div class="table-meta" style="margin-bottom:12px;">Session: {{ mvp.session.title }} | {{ mvp.session.date|date:"M d, Y | g:i A" }}</div>
+  {% endif %}
+  <div class="mvp-card">
+    <div style="flex:1;">
+      <div class="mvp-name">{{ mvp.player.name }}</div>
+      <div class="mvp-stats">
+        <div>Points: <strong>{{ mvp.points }}</strong></div>
+        <div>Points per Match: <strong>{{ mvp.points_per_match }}</strong></div>
+        <div>Attack Success Rate: <strong>{{ mvp.attack_success_rate }}%</strong></div>
+        <div>Blocks: <strong>{{ mvp.blocks }}</strong></div>
+      </div>
+    </div>
+    {% if mvp.player.photo %}
+    <img src="{{ mvp.player.photo.url }}" alt="{{ mvp.player.name }}" style="width:180px;height:140px;object-fit:cover;object-position:top;border-radius:var(--radius);">
+    {% else %}
+    <div class="highlight-img-placeholder" style="width:180px;height:140px;">MVP</div>
+    {% endif %}
+  </div>
+</div>
+{% else %}
+<div class="card empty-state-card">No MVP selected yet.</div>
+{% endif %}
+
+{% if request.user.is_coach %}
+<div class="form-page-card" style="margin-top:20px;">
+  <div class="section-header">
+    <div>
+      <h2 class="section-title">Manage Highlight</h2>
+      <p class="section-subtitle">Select the exact match or practice and update the featured highlight content.</p>
+    </div>
+  </div>
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input type="hidden" name="form_type" value="highlight">
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label for="{{ highlight_form.session.id_for_label }}">Session{% if highlight_form.session.field.required %}<span class="required-star">*</span>{% endif %}</label>
+        {{ highlight_form.session }}
+        {{ highlight_form.session.errors }}
+      </div>
+      <div class="form-group">
+        <label for="{{ highlight_form.score.id_for_label }}">Score{% if highlight_form.score.field.required %}<span class="required-star">*</span>{% endif %}</label>
+        {{ highlight_form.score }}
+        {{ highlight_form.score.errors }}
+      </div>
+      <div class="form-group full-width">
+        <label for="{{ highlight_form.title.id_for_label }}">Title{% if highlight_form.title.field.required %}<span class="required-star">*</span>{% endif %}</label>
+        {{ highlight_form.title }}
+        {{ highlight_form.title.errors }}
+      </div>
+      <div class="form-group full-width">
+        <label for="{{ highlight_form.summary.id_for_label }}">Summary{% if highlight_form.summary.field.required %}<span class="required-star">*</span>{% endif %}</label>
+        {{ highlight_form.summary }}
+        {{ highlight_form.summary.errors }}
+      </div>
+      <div class="form-group full-width">
+        <label for="{{ highlight_form.image.id_for_label }}">Image{% if highlight_form.image.field.required %}<span class="required-star">*</span>{% endif %}</label>
+        {{ highlight_form.image }}
+        {{ highlight_form.image.errors }}
+      </div>
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn btn-blue">Save Highlight</button>
+    </div>
+  </form>
+</div>
+
+<div class="form-page-card" style="margin-top:20px;">
+  <div class="section-header">
+    <div>
+      <h2 class="section-title">Manage MVP</h2>
+      <p class="section-subtitle">Choose the player and the exact session so the MVP section is explicit and easy to understand.</p>
+    </div>
+  </div>
+  <form method="post">
+    {% csrf_token %}
+    <input type="hidden" name="form_type" value="mvp">
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label for="{{ mvp_form.session.id_for_label }}">Session{% if mvp_form.session.field.required %}<span class="required-star">*</span>{% endif %}</label>
+        {{ mvp_form.session }}
+        {{ mvp_form.session.errors }}
+      </div>
+      <div class="form-group">
+        <label for="{{ mvp_form.player.id_for_label }}">Player{% if mvp_form.player.field.required %}<span class="required-star">*</span>{% endif %}</label>
+        {{ mvp_form.player }}
+        {{ mvp_form.player.errors }}
+      </div>
+      <div class="form-group">
+        <label for="{{ mvp_form.points.id_for_label }}">Points{% if mvp_form.points.field.required %}<span class="required-star">*</span>{% endif %}</label>
+        {{ mvp_form.points }}
+        {{ mvp_form.points.errors }}
+      </div>
+      <div class="form-group">
+        <label for="{{ mvp_form.points_per_match.id_for_label }}">Points per Match{% if mvp_form.points_per_match.field.required %}<span class="required-star">*</span>{% endif %}</label>
+        {{ mvp_form.points_per_match }}
+        {{ mvp_form.points_per_match.errors }}
+      </div>
+      <div class="form-group">
+        <label for="{{ mvp_form.attack_success_rate.id_for_label }}">Attack Success Rate{% if mvp_form.attack_success_rate.field.required %}<span class="required-star">*</span>{% endif %}</label>
+        {{ mvp_form.attack_success_rate }}
+        {{ mvp_form.attack_success_rate.errors }}
+      </div>
+      <div class="form-group">
+        <label for="{{ mvp_form.blocks.id_for_label }}">Blocks{% if mvp_form.blocks.field.required %}<span class="required-star">*</span>{% endif %}</label>
+        {{ mvp_form.blocks }}
+        {{ mvp_form.blocks.errors }}
+      </div>
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn btn-green">Save MVP</button>
+    </div>
+  </form>
+</div>
+{% endif %}
+{% endblock %}

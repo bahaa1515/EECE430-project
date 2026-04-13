@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-header-row">
+  <div>
+    <h1 class="page-header">Dashboard</h1>
+    <p class="page-subtitle">A quick view of what matters right now for the team and for your account.</p>
+  </div>
+</div>
+
+<div class="summary-grid">
+  <div class="summary-card"><div class="summary-label">Active Players</div><div class="summary-value">{{ dashboard_stats.active_players }}</div></div>
+  <div class="summary-card"><div class="summary-label">Upcoming Matches</div><div class="summary-value">{{ dashboard_stats.upcoming_matches }}</div></div>
+  <div class="summary-card"><div class="summary-label">Needs Attention</div><div class="summary-value">{{ dashboard_stats.needs_attention }}</div></div>
+  <div class="summary-card"><div class="summary-label">Unread Notifications</div><div class="summary-value">{{ dashboard_stats.pending_notifications }}</div></div>
+</div>
+
+<div class="dashboard-layout">
+  <div class="card">
+    <div class="section-header">
+      <div>
+        <h2 class="section-title">Upcoming Matches</h2>
+        <p class="section-subtitle">Only future sessions are shown here.</p>
+      </div>
+      <a href="{% url 'attendance' %}" class="btn btn-primary btn-sm">Open Attendance</a>
+    </div>
+    <div class="dashboard-list">
+      {% for match in upcoming_matches %}
+      <div class="dashboard-list-item">
+        <div>
+          <div class="table-title">{{ match.title }}</div>
+          <div class="table-meta">{{ match.date|date:"D, M d, Y | g:i A" }} | {{ match.location }}</div>
+        </div>
+        <span class="status-badge status-{{ match.status|slugify }}">{{ match.get_status_display }}</span>
+      </div>
+      {% empty %}
+      <div class="empty-state-card compact">No upcoming sessions scheduled.</div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-header">
+      <div>
+        <h2 class="section-title">Recent Notifications</h2>
+        <p class="section-subtitle">Your own notification feed and read state.</p>
+      </div>
+      <a href="{% url 'notifications' %}" class="btn btn-primary btn-sm">View All</a>
+    </div>
+    <div class="dashboard-list">
+      {% for item in recent_notifs %}
+      <div class="dashboard-list-item">
+        <div>
+          <div class="table-title">{{ item.notification.title }}</div>
+          <div class="table-meta">{{ item.notification.created_at|date:"M d, Y | H:i" }}</div>
+        </div>
+        <span class="{% if item.is_read %}status-good-text{% else %}status-danger-text{% endif %}">
+          {% if item.is_read %}Read{% else %}Unread{% endif %}
+        </span>
+      </div>
+      {% empty %}
+      <div class="empty-state-card compact">No notifications yet.</div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-header">
+      <div>
+        <h2 class="section-title">Quick Actions</h2>
+        <p class="section-subtitle">Shortcuts to the most common tasks.</p>
+      </div>
+    </div>
+    <div class="quick-actions-grid">
+      <a href="{% url 'players' %}" class="quick-action">View Roster</a>
+      <a href="{% url 'statistics' %}" class="quick-action">Open Statistics</a>
+      <a href="{% url 'highlights' %}" class="quick-action">Highlights</a>
+      <a href="{% url 'notifications' %}" class="quick-action">Notifications</a>
+      {% if request.user.is_coach %}
+      <a href="{% url 'match_create' %}" class="quick-action accent">Create Session</a>
+      <a href="{% url 'player_add' %}" class="quick-action accent">Add Player</a>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="card profile-card">
+    <div class="section-header">
+      <div>
+        <h2 class="section-title">Logged In As</h2>
+      </div>
+    </div>
+    <div class="profile-row">
+      <div class="avatar profile-avatar">{{ request.user.avatar_initials|default:"U" }}</div>
+      <div>
+        <div class="table-title">{{ request.user.get_full_name|default:request.user.username }}</div>
+        <div class="table-meta">{{ request.user.get_role_display|default:request.user.role|capfirst }}</div>
+        <div class="table-meta">{{ request.user.email|default:"No email provided" }}</div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

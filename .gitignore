@@ -1,0 +1,50 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+.Python
+*.egg
+*.egg-info/
+build/
+dist/
+pip-wheel-metadata/
+
+# Django / local data
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+media/
+staticfiles/
+static_root/
+
+# Virtual environments
+venv/
+env/
+.venv/
+.env/
+.env.*
+
+# Tests and coverage
+*/tests.py
+*/tests/
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+# Tooling caches
+.mypy_cache/
+.ruff_cache/
+
+# IDE / editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db

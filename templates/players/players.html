@@ -1,0 +1,161 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-header-row">
+  <div>
+    <h1 class="page-header">Team Roster</h1>
+    <p class="page-subtitle">Manage starters, substitutes, linked student accounts, and clean role changes from one page.</p>
+  </div>
+  {% if request.user.is_coach %}
+  <a href="{% url 'player_add' %}" class="btn btn-blue">Add Player</a>
+  {% endif %}
+</div>
+
+<div class="info-note">
+  Attendance percentages appear for roster players linked to student accounts. Unlinked players keep their manual roster values until an account is connected.
+</div>
+
+<div class="section-label">Starting Players</div>
+<div class="players-grid">
+  {% for player in starters %}
+  <div class="player-card roster-card">
+    <div class="player-card-badge">#{{ player.jersey_number }}</div>
+    <div class="player-card-points">{{ player.points }} pts</div>
+    {% if player.photo %}
+      <img src="{{ player.photo.url }}" alt="{{ player.name }}" class="player-card-img">
+    {% else %}
+      <div class="player-card-img-placeholder">
+        <svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="1" width="72" height="72">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+        </svg>
+      </div>
+    {% endif %}
+    <div class="player-card-stats">
+      <div class="player-stat-item"><span class="player-stat-label">KILLS</span><span class="player-stat-val">{{ player.kills }}</span></div>
+      <div class="player-stat-item"><span class="player-stat-label">BLOCKS</span><span class="player-stat-val">{{ player.blocks }}</span></div>
+      <div class="player-stat-item"><span class="player-stat-label">ACES</span><span class="player-stat-val">{{ player.aces }}</span></div>
+      <div class="player-stat-item"><span class="player-stat-label">ATK%</span><span class="player-stat-val">{{ player.attack_pct }}%</span></div>
+    </div>
+    <div class="roster-card-body">
+      <div class="roster-card-heading">
+        <div class="roster-player-name">{{ player.name }}</div>
+      </div>
+      <div class="roster-meta">
+        <div class="roster-meta-slot left">
+          <span class="roster-meta-pill">{{ player.get_position_short }} | {{ player.player_type }}</span>
+        </div>
+        <div class="roster-meta-slot center">
+          <span class="roster-meta-pill {% if not player.user %}muted{% endif %}">
+            {% if player.user %}@{{ player.user.username }}{% else %}No linked account{% endif %}
+          </span>
+        </div>
+        <div class="roster-meta-slot right">
+          {% if player.attendance_percentage is not None %}
+          <span class="roster-meta-pill success">{{ player.attendance_percentage }}% attendance</span>
+          {% else %}
+          <span class="roster-meta-pill muted">Attendance n/a</span>
+          {% endif %}
+        </div>
+      </div>
+      <div class="player-card-actions">
+        <a href="{% url 'player_detail' player.id %}" class="btn btn-primary btn-sm">View</a>
+        {% if request.user.is_coach %}
+        <a href="{% url 'player_edit' player.id %}" class="btn btn-primary btn-sm">Edit</a>
+        <form method="post" action="{% url 'demote_player' player.id %}">{% csrf_token %}<button type="submit" class="btn btn-primary btn-sm">Demote</button></form>
+        <a href="{% url 'swap_starter' player.id %}" class="btn btn-blue btn-sm">Swap</a>
+        <a href="{% url 'player_deactivate' player.id %}" class="btn btn-red btn-sm">Deactivate</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  {% empty %}
+  <div class="card empty-state-card">No starting players yet.</div>
+  {% endfor %}
+</div>
+
+<div class="section-label">Substitutes</div>
+<div class="players-grid">
+  {% for player in substitutes %}
+  <div class="player-card roster-card">
+    <div class="player-card-badge">#{{ player.jersey_number }}</div>
+    <div class="player-card-points">{{ player.points }} pts</div>
+    {% if player.photo %}
+      <img src="{{ player.photo.url }}" alt="{{ player.name }}" class="player-card-img">
+    {% else %}
+      <div class="player-card-img-placeholder">
+        <svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="1" width="72" height="72">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+        </svg>
+      </div>
+    {% endif %}
+    <div class="player-card-stats">
+      <div class="player-stat-item"><span class="player-stat-label">KILLS</span><span class="player-stat-val">{{ player.kills }}</span></div>
+      <div class="player-stat-item"><span class="player-stat-label">BLOCKS</span><span class="player-stat-val">{{ player.blocks }}</span></div>
+      <div class="player-stat-item"><span class="player-stat-label">ACES</span><span class="player-stat-val">{{ player.aces }}</span></div>
+      <div class="player-stat-item"><span class="player-stat-label">ATK%</span><span class="player-stat-val">{{ player.attack_pct }}%</span></div>
+    </div>
+    <div class="roster-card-body">
+      <div class="roster-card-heading">
+        <div class="roster-player-name">{{ player.name }}</div>
+      </div>
+      <div class="roster-meta">
+        <div class="roster-meta-slot left">
+          <span class="roster-meta-pill">{{ player.get_position_short }} | {{ player.player_type }}</span>
+        </div>
+        <div class="roster-meta-slot center">
+          <span class="roster-meta-pill {% if not player.user %}muted{% endif %}">
+            {% if player.user %}@{{ player.user.username }}{% else %}No linked account{% endif %}
+          </span>
+        </div>
+        <div class="roster-meta-slot right">
+          {% if player.attendance_percentage is not None %}
+          <span class="roster-meta-pill success">{{ player.attendance_percentage }}% attendance</span>
+          {% else %}
+          <span class="roster-meta-pill muted">Attendance n/a</span>
+          {% endif %}
+        </div>
+      </div>
+      <div class="player-card-actions">
+        <a href="{% url 'player_detail' player.id %}" class="btn btn-primary btn-sm">View</a>
+        {% if request.user.is_coach %}
+        <a href="{% url 'player_edit' player.id %}" class="btn btn-primary btn-sm">Edit</a>
+        <form method="post" action="{% url 'promote_player' player.id %}">{% csrf_token %}<button type="submit" class="btn btn-green btn-sm">Promote</button></form>
+        <a href="{% url 'player_deactivate' player.id %}" class="btn btn-red btn-sm">Deactivate</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  {% empty %}
+  <div class="card empty-state-card">No substitutes yet.</div>
+  {% endfor %}
+</div>
+
+{% if request.user.is_coach and inactive_players %}
+<div class="section-label">Inactive Players</div>
+<div class="card">
+  <div class="table-responsive">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Jersey</th>
+          <th>Position</th>
+          <th>Linked Account</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for player in inactive_players %}
+        <tr>
+          <td>{{ player.name }}</td>
+          <td>#{{ player.jersey_number }}</td>
+          <td>{{ player.get_position_display }}</td>
+          <td>{{ player.user.username|default:"Not linked" }}</td>
+          <td><a href="{% url 'player_edit' player.id %}" class="btn btn-primary btn-sm">Edit</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

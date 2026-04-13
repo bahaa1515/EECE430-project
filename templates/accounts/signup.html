@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AUB Varsity Volleyball - Sign Up</title>
+<link rel="stylesheet" href="/static/css/main.css">
+</head>
+<body>
+<div class="login-page">
+  <span class="login-label">Create your AUB Volleyball account</span>
+  <div class="login-card" style="width:380px;">
+
+    <div class="login-logo">
+      <div style="width:44px;height:44px;background:var(--aub-maroon);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <svg viewBox="0 0 32 32" width="28" height="28">
+          <circle cx="16" cy="16" r="13" fill="none" stroke="white" stroke-width="1.5"/>
+          <text x="16" y="20" text-anchor="middle" font-size="8" font-weight="bold" font-family="Georgia,serif" fill="white">AUB</text>
+        </svg>
+      </div>
+      <span class="login-logo-text">Please enter your AUB credentials</span>
+    </div>
+
+    <div class="login-title">Create Account</div>
+
+    <div class="role-tabs">
+      <button type="button" class="role-tab {% if role == 'student' %}active{% endif %}" onclick="setRole('student',this)">Student</button>
+      <button type="button" class="role-tab {% if role == 'coach' %}active{% endif %}" onclick="setRole('coach',this)">Coach</button>
+    </div>
+    {% if messages %}
+      <div class="toast-stack login-toast-stack" data-toast-stack>
+      {% for msg in messages %}
+      <div class="toast toast-error" data-toast>
+        <div class="toast-body">{{ msg }}</div>
+        <button type="button" class="toast-close" data-toast-close aria-label="Dismiss notification">×</button>
+      </div>
+      {% endfor %}
+      </div>
+    {% endif %}
+
+    <form method="post" autocomplete="off">
+      {% csrf_token %}
+      <input type="hidden" name="role" id="roleInput" value="{{ role }}">
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div class="login-field">
+          <label for="signup-first-name">First name<span class="required-star">*</span></label>
+          <input id="signup-first-name" type="text" name="first_name" class="form-input" style="margin-bottom:0;" placeholder="First name" value="{{ post.first_name }}" required>
+        </div>
+        <div class="login-field">
+          <label for="signup-last-name">Last name<span class="required-star">*</span></label>
+          <input id="signup-last-name" type="text" name="last_name" class="form-input" style="margin-bottom:0;" placeholder="Last name" value="{{ post.last_name }}" required>
+        </div>
+      </div>
+      <div style="height:12px;"></div>
+
+      <div class="login-field">
+        <label for="signup-email">AUB email<span class="required-star">*</span></label>
+        <input id="signup-email" type="email" name="email" class="form-input" placeholder="AUB email" value="{{ post.email }}" required autocomplete="email">
+      </div>
+      <div class="login-field">
+        <label for="signup-password1">Create password<span class="required-star">*</span></label>
+        <input id="signup-password1" type="password" name="password1" class="form-input" placeholder="Create a password (min 6 characters)" required>
+      </div>
+      <div class="login-field">
+        <label for="signup-password2">Confirm password<span class="required-star">*</span></label>
+        <input id="signup-password2" type="password" name="password2" class="form-input" placeholder="Confirm password" required>
+      </div>
+
+      <button type="submit" class="btn-login" style="margin-top:4px;">Create Account</button>
+    </form>
+
+    <div style="text-align:center;margin-top:18px;font-size:13px;color:var(--gray-500);">
+      Already have an account?
+      <a href="/login/?role={{ role }}" style="color:var(--blue);font-weight:600;text-decoration:none;">Log in</a>
+    </div>
+
+  </div>
+</div>
+<script>
+function setRole(r, btn) {
+  document.getElementById('roleInput').value = r;
+  document.querySelectorAll('.role-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+document.querySelectorAll('[data-toast]').forEach(function (toast, index) {
+  window.setTimeout(function () {
+    toast.classList.add('is-visible');
+  }, index * 100);
+
+  window.setTimeout(function () {
+    toast.classList.add('is-hiding');
+    window.setTimeout(function () {
+      toast.remove();
+    }, 260);
+  }, 3600 + index * 150);
+});
+
+document.querySelectorAll('[data-toast-close]').forEach(function (button) {
+  button.addEventListener('click', function () {
+    var toast = button.closest('[data-toast]');
+    if (!toast) {
+      return;
+    }
+    toast.classList.add('is-hiding');
+    window.setTimeout(function () {
+      toast.remove();
+    }, 260);
+  });
+});
+</script>
+</body>
+</html>

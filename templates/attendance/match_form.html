@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-header-row">
+  <div>
+    <h1 class="page-header">{{ page_title }}</h1>
+    <p class="page-subtitle">Set the session details once and keep match management inside the attendance workflow.</p>
+  </div>
+</div>
+
+<div class="form-page-card">
+  <form method="post">
+    {% csrf_token %}
+    {% if form.non_field_errors %}
+    <div class="alert-error">{{ form.non_field_errors|join:", " }}</div>
+    {% endif %}
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label for="{{ form.title.id_for_label }}">Title{% if form.title.field.required %}<span class="required-star">*</span>{% endif %}</label>
+        {{ form.title }}
+        {{ form.title.errors }}
+      </div>
+      <div class="form-group">
+        <label for="{{ form.match_type.id_for_label }}">Type{% if form.match_type.field.required %}<span class="required-star">*</span>{% endif %}</label>
+        {{ form.match_type }}
+        {{ form.match_type.errors }}
+      </div>
+      <div class="form-group">
+        <label for="{{ form.status.id_for_label }}">Status{% if form.status.field.required %}<span class="required-star">*</span>{% endif %}</label>
+        {{ form.status }}
+        {{ form.status.errors }}
+      </div>
+      <div class="form-group">
+        <label for="{{ form.duration_hours.id_for_label }}">Duration (hours){% if form.duration_hours.field.required %}<span class="required-star">*</span>{% endif %}</label>
+        {{ form.duration_hours }}
+        {{ form.duration_hours.errors }}
+      </div>
+      <div class="form-group">
+        <label for="{{ form.date.id_for_label }}">Date and time{% if form.date.field.required %}<span class="required-star">*</span>{% endif %}</label>
+        {{ form.date }}
+        {{ form.date.errors }}
+      </div>
+      <div class="form-group">
+        <label for="{{ form.confirmation_closes.id_for_label }}">Confirmation closes{% if form.confirmation_closes.field.required %}<span class="required-star">*</span>{% endif %}</label>
+        {{ form.confirmation_closes }}
+        {{ form.confirmation_closes.errors }}
+      </div>
+      <div class="form-group full-width">
+        <label for="{{ form.location.id_for_label }}">Location{% if form.location.field.required %}<span class="required-star">*</span>{% endif %}</label>
+        {{ form.location }}
+        {{ form.location.errors }}
+      </div>
+    </div>
+    <div class="form-actions">
+      <a href="{% url 'attendance' %}" class="btn btn-primary">Cancel</a>
+      <button type="submit" class="btn btn-blue">{{ submit_label }}</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

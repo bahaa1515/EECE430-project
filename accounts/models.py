@@ -1,0 +1,24 @@
+from django.contrib.auth.models import AbstractUser
+from django.db import models
+
+class CustomUser(AbstractUser):
+    ROLE_STUDENT = 'student'
+    ROLE_COACH = 'coach'
+    ROLE_CHOICES = [(ROLE_STUDENT, 'Student'), (ROLE_COACH, 'Coach')]
+
+    role = models.CharField(max_length=10, choices=ROLE_CHOICES, default=ROLE_STUDENT)
+    aub_id = models.CharField(max_length=20, blank=True)
+    avatar_initials = models.CharField(max_length=3, blank=True)
+
+    def is_coach(self):
+        return self.role == self.ROLE_COACH
+
+    def get_initials(self):
+        parts = self.get_full_name().split()
+        if len(parts) >= 2:
+            return (parts[0][0] + parts[-1][0]).upper()
+        return self.username[:2].upper()
+
+    def save(self, *args, **kwargs):
+        self.avatar_initials = self.get_initials()
+        super().save(*args, **kwargs)
