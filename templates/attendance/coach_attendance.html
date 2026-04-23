@@ -3,7 +3,7 @@
 <div class="page-header-row">
   <div>
     <h1 class="page-header">Attendance Management</h1>
-    <p class="page-subtitle">Student responses are shown for planning, but official attendance is set here by the coach and drives the metrics.</p>
+    <p class="page-subtitle">Player responses are shown for planning, but official attendance is set here by the coach and drives the metrics.</p>
   </div>
   <a href="{% url 'match_create' %}" class="btn btn-blue">Create Match / Practice</a>
 </div>
@@ -109,7 +109,7 @@
           <tr>
             <th>Player Account</th>
             <th>Linked Roster Entry</th>
-            <th>Student RSVP</th>
+            <th>Player RSVP</th>
             <th>Attendance Rate</th>
             <th>Total Records</th>
             <th>Official Status for This Session</th>
@@ -153,7 +153,7 @@
             </td>
           </tr>
           {% empty %}
-          <tr><td colspan="6" class="empty-cell">No student accounts are available to manage.</td></tr>
+          <tr><td colspan="6" class="empty-cell">No player accounts are available to manage.</td></tr>
           {% endfor %}
         </tbody>
       </table>
@@ -200,6 +200,11 @@
           <td>
             <div class="table-actions">
               <a href="?{% if querystring %}{{ querystring }}&{% endif %}match={{ row.match.id }}&manage=1" class="btn btn-primary btn-sm">Manage</a>
+              {% if row.session_stat_id %}
+              <a href="{% url 'session_stat_edit' row.session_stat_id %}" class="btn btn-primary btn-sm">Session Stats</a>
+              {% else %}
+              <a href="{% url 'session_stat_create' %}?match={{ row.match.id }}" class="btn btn-primary btn-sm">Session Stats</a>
+              {% endif %}
               <a href="{% url 'match_edit' row.match.id %}" class="btn btn-primary btn-sm">Edit</a>
               <a href="{% url 'match_delete' row.match.id %}" class="btn btn-red btn-sm">Delete</a>
             </div>

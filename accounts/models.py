@@ -4,7 +4,7 @@ from django.db import models
 class CustomUser(AbstractUser):
     ROLE_STUDENT = 'student'
     ROLE_COACH = 'coach'
-    ROLE_CHOICES = [(ROLE_STUDENT, 'Student'), (ROLE_COACH, 'Coach')]
+    ROLE_CHOICES = [(ROLE_STUDENT, 'Player'), (ROLE_COACH, 'Coach')]
 
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default=ROLE_STUDENT)
     aub_id = models.CharField(max_length=20, blank=True)

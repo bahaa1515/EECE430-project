@@ -15,6 +15,7 @@ from accounts.models import CustomUser
 from accounts.permissions import coach_required
 from notifications.services import create_notification
 from players.models import Player
+from statistics_app.models import SessionStat
 
 from .forms import MatchForm
 from .models import AttendanceRecord, Match
@@ -233,7 +234,7 @@ def player_attendance(request):
 def coach_attendance(request):
     matches, filters = _apply_match_filters(
         request.GET,
-        Match.objects.select_related("coach"),
+        Match.objects.select_related("coach", "session_stat"),
     )
     paginator = Paginator(matches, 6)
     matches_page = paginator.get_page(request.GET.get("page", 1))
@@ -264,6 +265,12 @@ def coach_attendance(request):
         ),
     )
     count_map = {row["match_id"]: row for row in match_counts}
+    session_stat_map = {
+        session_stat.match_id: session_stat.id
+        for session_stat in SessionStat.objects.filter(
+            match_id__in=[match.id for match in matches_page.object_list]
+        )
+    }
     match_rows = []
     for match in matches_page:
         row = count_map.get(match.id, {})
@@ -275,6 +282,7 @@ def coach_attendance(request):
                 "late": row.get("late", 0),
                 "excused": row.get("excused", 0),
                 "pending_review": row.get("pending_review", 0),
+                "session_stat_id": session_stat_map.get(match.id),
             }
         )
 

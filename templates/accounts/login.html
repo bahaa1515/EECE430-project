@@ -8,7 +8,7 @@
 </head>
 <body>
 <div class="login-page">
-  <span class="login-label">Login only with AUB credentials | {{ role|capfirst }}</span>
+  <span class="login-label">Login only with AUB credentials | {% if role == 'student' %}Player{% else %}Coach{% endif %}</span>
   <div class="login-card">
 
     <div class="login-logo">
@@ -24,7 +24,7 @@
     <div class="login-title">Welcome to AUB volleyball</div>
 
     <div class="role-tabs">
-      <button type="button" class="role-tab {% if role == 'student' %}active{% endif %}" onclick="setRole('student',this)">Student</button>
+      <button type="button" class="role-tab {% if role == 'student' %}active{% endif %}" onclick="setRole('student',this)">Player</button>
       <button type="button" class="role-tab {% if role == 'coach' %}active{% endif %}" onclick="setRole('coach',this)">Coach</button>
     </div>
 

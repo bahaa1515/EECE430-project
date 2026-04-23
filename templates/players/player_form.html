@@ -3,7 +3,7 @@
 <div class="page-header-row">
   <div>
     <h1 class="page-header">{{ page_title }}</h1>
-    <p class="page-subtitle">Use this form to keep roster information up to date and link each player to their student AUB email.</p>
+    <p class="page-subtitle">Use this form to keep roster information up to date and link each player to their AUB player email.</p>
   </div>
 </div>
 
@@ -19,7 +19,7 @@
       <div class="form-group"><label for="{{ form.position.id_for_label }}">Position{% if form.position.field.required %}<span class="required-star">*</span>{% endif %}</label>{{ form.position }}{{ form.position.errors }}</div>
       <div class="form-group"><label for="{{ form.player_type.id_for_label }}">Role{% if form.player_type.field.required %}<span class="required-star">*</span>{% endif %}</label>{{ form.player_type }}{{ form.player_type.errors }}</div>
       <div class="form-group full-width">
-        <label for="{{ form.user.id_for_label }}">Linked Student AUB Email{% if form.user.field.required %}<span class="required-star">*</span>{% endif %}</label>
+        <label for="{{ form.user.id_for_label }}">Linked Player AUB Email{% if form.user.field.required %}<span class="required-star">*</span>{% endif %}</label>
         {{ form.user }}
         <div class="helper-text">{{ form.user.help_text }}</div>
         {{ form.user.errors }}

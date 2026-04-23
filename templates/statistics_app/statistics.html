@@ -6,12 +6,15 @@
     <p class="page-subtitle">This page separates live computed data from manual season metrics so the numbers stay honest.</p>
   </div>
   {% if request.user.is_coach %}
-  <a href="{% url 'player_stat_create' %}" class="btn btn-blue">Record Match Stats</a>
+  <div class="table-actions">
+    <a href="{% url 'session_stat_create' %}" class="btn btn-primary">Record Session Stats</a>
+    <a href="{% url 'player_stat_create' %}" class="btn btn-blue">Record Player Stats</a>
+  </div>
   {% endif %}
 </div>
 
 <div class="info-note">
-  Computed sections below are generated from matches, coach-verified attendance records, and recorded player match logs. Student RSVP responses are not used for official attendance percentages.
+  Computed sections below are generated from matches, coach-verified attendance records, recorded session reports, and recorded player match logs. Player RSVP responses are not used for official attendance percentages.
 </div>
 
 <div class="summary-grid">
@@ -81,7 +84,57 @@
 <div class="card" style="margin-bottom:20px;">
   <div class="section-header">
     <div>
-      <h2 class="section-title">Recent Match Logs</h2>
+      <h2 class="section-title">Recent Session Stats</h2>
+      <p class="section-subtitle">These coach-managed session reports belong to a specific match or practice and stay separate from player performance logs.</p>
+    </div>
+  </div>
+  <div class="table-responsive">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Session</th>
+          <th>Date</th>
+          <th>Score</th>
+          <th>Sets</th>
+          <th>Kills</th>
+          <th>Blocks</th>
+          <th>Aces</th>
+          <th>Result</th>
+          {% if request.user.is_coach %}<th>Actions</th>{% endif %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for stat_row in recent_session_stats %}
+        <tr>
+          <td>{{ stat_row.match.title }}</td>
+          <td>{{ stat_row.match.date|date:"M d, Y" }}</td>
+          <td>{{ stat_row.team_score }} - {{ stat_row.opponent_score }}</td>
+          <td>{{ stat_row.sets_won }} - {{ stat_row.sets_lost }}</td>
+          <td>{{ stat_row.kills }}</td>
+          <td>{{ stat_row.blocks }}</td>
+          <td>{{ stat_row.aces }}</td>
+          <td>{{ stat_row.result_label }}</td>
+          {% if request.user.is_coach %}
+          <td>
+            <div class="table-actions">
+              <a href="{% url 'session_stat_edit' stat_row.id %}" class="btn btn-primary btn-sm">Edit</a>
+              <a href="{% url 'session_stat_delete' stat_row.id %}" class="btn btn-red btn-sm">Delete</a>
+            </div>
+          </td>
+          {% endif %}
+        </tr>
+        {% empty %}
+        <tr><td colspan="{% if request.user.is_coach %}8{% else %}7{% endif %}" class="empty-cell">No session stats have been recorded yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="card" style="margin-bottom:20px;">
+  <div class="section-header">
+    <div>
+      <h2 class="section-title">Recent Player Stats</h2>
       <p class="section-subtitle">These per-player match logs directly feed the live player leaders and player detail totals.</p>
     </div>
   </div>

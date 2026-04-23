@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-header-row">
+  <div>
+    <h1 class="page-header">{{ page_title }}</h1>
+    <p class="page-subtitle">Session stats belong to one specific match or practice and stay separate from player performance logs.</p>
+  </div>
+</div>
+
+<div class="form-page-card">
+  <form method="post">
+    {% csrf_token %}
+    {% if form.non_field_errors %}
+    <div class="toast toast-error is-visible" style="position:static;transform:none;opacity:1;box-shadow:none;">
+      <div class="toast-body">{{ form.non_field_errors|join:", " }}</div>
+    </div>
+    {% endif %}
+    <div class="form-grid-2">
+      <div class="form-group full-width">
+        <label for="{{ form.match.id_for_label }}">Session{% if form.match.field.required %}<span class="required-star">*</span>{% endif %}</label>
+        {{ form.match }}
+        {{ form.match.errors }}
+      </div>
+      <div class="form-group">
+        <label for="{{ form.team_score.id_for_label }}">Team Score{% if form.team_score.field.required %}<span class="required-star">*</span>{% endif %}</label>
+        {{ form.team_score }}
+        {{ form.team_score.errors }}
+      </div>
+      <div class="form-group">
+        <label for="{{ form.opponent_score.id_for_label }}">Opponent Score{% if form.opponent_score.field.required %}<span class="required-star">*</span>{% endif %}</label>
+        {{ form.opponent_score }}
+        {{ form.opponent_score.errors }}
+      </div>
+      <div class="form-group">
+        <label for="{{ form.sets_won.id_for_label }}">Sets Won{% if form.sets_won.field.required %}<span class="required-star">*</span>{% endif %}</label>
+        {{ form.sets_won }}
+        {{ form.sets_won.errors }}
+      </div>
+      <div class="form-group">
+        <label for="{{ form.sets_lost.id_for_label }}">Sets Lost{% if form.sets_lost.field.required %}<span class="required-star">*</span>{% endif %}</label>
+        {{ form.sets_lost }}
+        {{ form.sets_lost.errors }}
+      </div>
+      <div class="form-group">
+        <label for="{{ form.kills.id_for_label }}">Team Kills{% if form.kills.field.required %}<span class="required-star">*</span>{% endif %}</label>
+        {{ form.kills }}
+        {{ form.kills.errors }}
+      </div>
+      <div class="form-group">
+        <label for="{{ form.blocks.id_for_label }}">Team Blocks{% if form.blocks.field.required %}<span class="required-star">*</span>{% endif %}</label>
+        {{ form.blocks }}
+        {{ form.blocks.errors }}
+      </div>
+      <div class="form-group">
+        <label for="{{ form.aces.id_for_label }}">Team Aces{% if form.aces.field.required %}<span class="required-star">*</span>{% endif %}</label>
+        {{ form.aces }}
+        {{ form.aces.errors }}
+      </div>
+      <div class="form-group full-width">
+        <label for="{{ form.notes.id_for_label }}">Notes{% if form.notes.field.required %}<span class="required-star">*</span>{% endif %}</label>
+        {{ form.notes }}
+        {{ form.notes.errors }}
+      </div>
+    </div>
+    <div class="form-actions">
+      <a href="{% url 'statistics' %}" class="btn btn-primary">Cancel</a>
+      <button type="submit" class="btn btn-blue">{{ submit_label }}</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

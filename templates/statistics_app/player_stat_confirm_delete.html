@@ -2,8 +2,8 @@
 {% block content %}
 <div class="page-header-row">
   <div>
-    <h1 class="page-header">Delete Match Stats</h1>
-    <p class="page-subtitle">Remove this recorded match log if it was entered incorrectly.</p>
+    <h1 class="page-header">Delete Player Stats</h1>
+    <p class="page-subtitle">Remove this recorded player log if it was entered incorrectly.</p>
   </div>
 </div>
 
@@ -19,7 +19,7 @@
     {% csrf_token %}
     <div class="form-actions">
       <a href="{% url 'statistics' %}" class="btn btn-primary">Cancel</a>
-      <button type="submit" class="btn btn-red">Delete Match Stats</button>
+      <button type="submit" class="btn btn-red">Delete Player Stats</button>
     </div>
   </form>
 </div>

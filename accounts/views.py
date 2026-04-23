@@ -3,8 +3,12 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from .models import CustomUser
 
-STUDENT_EMAIL_DOMAIN = '@mail.aub.edu'
+PLAYER_EMAIL_DOMAIN = '@mail.aub.edu'
 COACH_EMAIL_DOMAIN = '@aub.edu.lb'
+
+
+def _role_label(role):
+    return "player" if role == CustomUser.ROLE_STUDENT else "coach"
 
 
 def login_view(request):
@@ -17,7 +21,7 @@ def login_view(request):
         role = request.POST.get('role', 'student')
         remember = request.POST.get('remember_me')
         expected_domain = (
-            STUDENT_EMAIL_DOMAIN if role == CustomUser.ROLE_STUDENT else COACH_EMAIL_DOMAIN
+            PLAYER_EMAIL_DOMAIN if role == CustomUser.ROLE_STUDENT else COACH_EMAIL_DOMAIN
         )
 
         if not email:
@@ -29,7 +33,7 @@ def login_view(request):
         if not email.endswith(expected_domain):
             messages.error(
                 request,
-                f'Please use your {role} AUB email address ending in {expected_domain}.',
+                f'Please use your {_role_label(role)} AUB email address ending in {expected_domain}.',
             )
             return render(request, 'accounts/login.html', {'role': role})
 
@@ -70,10 +74,10 @@ def signup_view(request):
 
         if not first_name or not last_name or not email:
             messages.error(request, 'First name, last name, and AUB email are required.')
-        elif role == CustomUser.ROLE_STUDENT and not email.endswith(STUDENT_EMAIL_DOMAIN):
+        elif role == CustomUser.ROLE_STUDENT and not email.endswith(PLAYER_EMAIL_DOMAIN):
             messages.error(
                 request,
-                f'Please use your student AUB email address ending in {STUDENT_EMAIL_DOMAIN}.',
+                f'Please use your player AUB email address ending in {PLAYER_EMAIL_DOMAIN}.',
             )
         elif role == CustomUser.ROLE_COACH and not email.endswith(COACH_EMAIL_DOMAIN):
             messages.error(

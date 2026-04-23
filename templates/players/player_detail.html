@@ -7,7 +7,7 @@
   </div>
   <div class="table-actions">
     {% if request.user.is_coach %}
-    <a href="{% url 'player_stat_create' %}?player={{ player.id }}" class="btn btn-green">Add Match Log</a>
+    <a href="{% url 'player_stat_create' %}?player={{ player.id }}" class="btn btn-green">Add Player Stats</a>
     <a href="{% url 'player_edit' player.id %}" class="btn btn-blue">Edit Player</a>
     {% endif %}
     <a href="{% url 'players' %}" class="btn btn-primary">Back to Roster</a>
@@ -68,7 +68,7 @@
     <div class="section-header space-top">
       <div>
         <h2 class="section-title">Attendance Summary</h2>
-        <p class="section-subtitle">This section is computed from coach-verified attendance tied to the linked student account.</p>
+        <p class="section-subtitle">This section is computed from coach-verified attendance tied to the linked player account.</p>
       </div>
     </div>
     <div class="detail-list">

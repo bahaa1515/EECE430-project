@@ -3,7 +3,7 @@
 <div class="page-header-row">
   <div>
     <h1 class="page-header">Team Roster</h1>
-    <p class="page-subtitle">Manage starters, substitutes, linked student accounts, and clean role changes from one page.</p>
+    <p class="page-subtitle">Manage starters, substitutes, linked player accounts, and clean role changes from one page.</p>
   </div>
   {% if request.user.is_coach %}
   <a href="{% url 'player_add' %}" class="btn btn-blue">Add Player</a>
@@ -11,7 +11,7 @@
 </div>
 
 <div class="info-note">
-  Attendance percentages appear for roster players linked to student accounts. Unlinked players keep their manual roster values until an account is connected.
+  Attendance percentages appear for roster players linked to player accounts. Unlinked players keep their manual roster values until an account is connected.
 </div>
 
 <div class="section-label">Starting Players</div>

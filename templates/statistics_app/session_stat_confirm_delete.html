@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-header-row">
+  <div>
+    <h1 class="page-header">Delete Session Stats</h1>
+    <p class="page-subtitle">Remove this coach-managed session report if it was entered incorrectly.</p>
+  </div>
+</div>
+
+<div class="confirm-page-card">
+  <div class="section-header">
+    <div>
+      <h2 class="section-title">{{ stat.match.title }}</h2>
+      <p class="section-subtitle">{{ stat.match.date|date:"M d, Y" }} | Score {{ stat.team_score }} - {{ stat.opponent_score }} | Sets {{ stat.sets_won }} - {{ stat.sets_lost }}</p>
+    </div>
+  </div>
+  <div class="info-note">Deleting this session report will not delete the session itself, but it will remove this session from the statistics page.</div>
+  <form method="post">
+    {% csrf_token %}
+    <div class="form-actions">
+      <a href="{% url 'statistics' %}" class="btn btn-primary">Cancel</a>
+      <button type="submit" class="btn btn-red">Delete Session Stats</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

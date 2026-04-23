@@ -4,7 +4,7 @@ from accounts.models import CustomUser
 
 from .models import Player
 
-STUDENT_EMAIL_DOMAIN = "@mail.aub.edu"
+PLAYER_EMAIL_DOMAIN = "@mail.aub.edu"
 
 
 class PlayerForm(forms.ModelForm):
@@ -13,11 +13,11 @@ class PlayerForm(forms.ModelForm):
         widget=forms.TextInput(
             attrs={
                 "class": "form-input",
-                "placeholder": "Student AUB email ending in @mail.aub.edu",
+                "placeholder": "Player AUB email ending in @mail.aub.edu",
                 "autocomplete": "off",
             }
         ),
-        help_text="Required. Enter the player's student AUB email ending in @mail.aub.edu.",
+        help_text="Required. Enter the player's AUB email ending in @mail.aub.edu.",
     )
 
     class Meta:
@@ -81,12 +81,12 @@ class PlayerForm(forms.ModelForm):
     def clean_user(self):
         email = (self.cleaned_data.get("user") or "").strip().lower()
         if not email:
-            raise forms.ValidationError("A linked student account email is required.")
+            raise forms.ValidationError("A linked player account email is required.")
         if "@" not in email:
-            raise forms.ValidationError("Enter the student's full AUB email address.")
-        if not email.endswith(STUDENT_EMAIL_DOMAIN):
+            raise forms.ValidationError("Enter the player's full AUB email address.")
+        if not email.endswith(PLAYER_EMAIL_DOMAIN):
             raise forms.ValidationError(
-                f"Linked players must use a student AUB email ending in {STUDENT_EMAIL_DOMAIN}."
+                f"Linked players must use a player AUB email ending in {PLAYER_EMAIL_DOMAIN}."
             )
 
         try:
@@ -96,14 +96,14 @@ class PlayerForm(forms.ModelForm):
             )
         except CustomUser.DoesNotExist:
             raise forms.ValidationError(
-                "No student account was found with that AUB email."
+                "No player account was found with that AUB email."
             )
 
         qs = Player.objects.filter(user=user)
         if self.instance.pk:
             qs = qs.exclude(pk=self.instance.pk)
         if qs.exists():
-            raise forms.ValidationError("This student account is already linked to a player.")
+            raise forms.ValidationError("This player account is already linked to a roster entry.")
         return user
 
     def clean(self):

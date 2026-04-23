@@ -1,5 +1,6 @@
 from django.db import models
 
+
 class TeamStat(models.Model):
     season = models.CharField(max_length=20, default='2024-2025')
     home_played = models.IntegerField(default=0)
@@ -49,6 +50,41 @@ class TeamStat(models.Model):
         return round(self.total_losses / self.total_played * 100, 2) if self.total_played else 0
 
     def __str__(self): return f"Team Stats {self.season}"
+
+
+class SessionStat(models.Model):
+    match = models.OneToOneField(
+        "attendance.Match",
+        on_delete=models.CASCADE,
+        related_name="session_stat",
+    )
+    team_score = models.PositiveIntegerField(default=0)
+    opponent_score = models.PositiveIntegerField(default=0)
+    sets_won = models.PositiveSmallIntegerField(default=0)
+    sets_lost = models.PositiveSmallIntegerField(default=0)
+    kills = models.PositiveIntegerField(default=0)
+    blocks = models.PositiveIntegerField(default=0)
+    aces = models.PositiveIntegerField(default=0)
+    notes = models.TextField(blank=True)
+
+    class Meta:
+        ordering = ["-match__date"]
+
+    @property
+    def result_label(self):
+        if self.sets_won > self.sets_lost:
+            return "Win"
+        if self.sets_won < self.sets_lost:
+            return "Loss"
+        if self.team_score > self.opponent_score:
+            return "Win"
+        if self.team_score < self.opponent_score:
+            return "Loss"
+        return "Draw"
+
+    def __str__(self):
+        return f"Session Stats for {self.match.title}"
+
 
 class PlayerStat(models.Model):
     player   = models.ForeignKey('players.Player', on_delete=models.CASCADE, related_name='match_stats')
