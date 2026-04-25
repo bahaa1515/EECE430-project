@@ -5,7 +5,7 @@
     <h1 class="page-header">Attendance Management</h1>
     <p class="page-subtitle">Player responses are shown for planning, but official attendance is set here by the coach and drives the metrics.</p>
   </div>
-  <a href="{% url 'match_create' %}" class="btn btn-blue">Create Match / Practice</a>
+  <a href="{% url 'sessions_calendar' %}" class="btn btn-blue">Open Team Sessions</a>
 </div>
 
 <div class="summary-grid">
@@ -73,7 +73,6 @@
         <option value="Completed" {% if filters.status == 'Completed' %}selected{% endif %}>Completed</option>
         <option value="Cancelled" {% if filters.status == 'Cancelled' %}selected{% endif %}>Cancelled</option>
         <option value="Postponed" {% if filters.status == 'Postponed' %}selected{% endif %}>Postponed</option>
-        <option value="Problem" {% if filters.status == 'Problem' %}selected{% endif %}>Problem / Needs Attention</option>
       </select>
     </div>
     <div class="filter-field">
@@ -100,6 +99,11 @@
     </div>
     <span class="status-badge status-{{ selected_match.status|slugify }}">{{ selected_match.get_status_display }}</span>
   </div>
+  {% if not can_edit_official_attendance %}
+  <div class="info-note compact-note">
+    Official attendance is locked until this session is marked <strong>Completed</strong>. Coaches can still review player RSVPs here before the session happens.
+  </div>
+  {% endif %}
   <form method="post" action="{% url 'update_match_attendance' selected_match.id %}">
     {% csrf_token %}
     <input type="hidden" name="next" value="{{ request.get_full_path }}">
@@ -143,7 +147,7 @@
             </td>
             <td>{{ row.summary.total }}</td>
             <td>
-              <select name="player_{{ row.user.id }}" class="form-select attendance-select">
+              <select name="player_{{ row.user.id }}" class="form-select attendance-select" {% if not can_edit_official_attendance %}disabled{% endif %}>
                 <option value="Present" {% if row.official_status == 'Present' %}selected{% endif %}>Present</option>
                 <option value="Absent" {% if row.official_status == 'Absent' %}selected{% endif %}>Absent</option>
                 <option value="Late" {% if row.official_status == 'Late' %}selected{% endif %}>Late</option>
@@ -159,7 +163,11 @@
       </table>
     </div>
     <div class="form-actions">
+      {% if can_edit_official_attendance %}
       <button type="submit" class="btn btn-green">Save Attendance</button>
+      {% else %}
+      <span class="table-meta">Change the session status to Completed before saving official attendance.</span>
+      {% endif %}
     </div>
   </form>
 </div>
@@ -169,7 +177,7 @@
   <div class="section-header">
     <div>
       <h2 class="section-title">Sessions</h2>
-      <p class="section-subtitle">Select a session to manage attendance, or edit and delete it from the same table.</p>
+      <p class="section-subtitle">Select a completed session to manage official attendance. Scheduling changes live on the Team Sessions page.</p>
     </div>
   </div>
   <div class="table-responsive">
@@ -205,8 +213,6 @@
               {% else %}
               <a href="{% url 'session_stat_create' %}?match={{ row.match.id }}" class="btn btn-primary btn-sm">Session Stats</a>
               {% endif %}
-              <a href="{% url 'match_edit' row.match.id %}" class="btn btn-primary btn-sm">Edit</a>
-              <a href="{% url 'match_delete' row.match.id %}" class="btn btn-red btn-sm">Delete</a>
             </div>
           </td>
         </tr>

@@ -6,7 +6,7 @@
   <div class="info-note">{{ match.match_type }} | {{ match.date|date:"D, M d, Y | g:i A" }} | {{ match.location }}</div>
   <form method="post" class="form-actions">
     {% csrf_token %}
-    <a href="{% url 'attendance' %}" class="btn btn-primary">Cancel</a>
+    <a href="{% url 'sessions_calendar' %}" class="btn btn-primary">Cancel</a>
     <button type="submit" class="btn btn-red">Delete Session</button>
   </form>
 </div>

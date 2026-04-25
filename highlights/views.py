@@ -13,6 +13,8 @@ def highlights_view(request):
     mvp = MVP.objects.select_related("player", "match", "session").first()
     highlight_form = MatchHighlightForm(instance=highlight)
     mvp_form = MVPForm(instance=mvp)
+    open_highlight_editor = False
+    open_mvp_editor = False
 
     if request.method == "POST":
         if not request.user.is_coach():
@@ -20,6 +22,7 @@ def highlights_view(request):
 
         form_type = request.POST.get("form_type")
         if form_type == "highlight":
+            open_highlight_editor = True
             highlight_form = MatchHighlightForm(
                 request.POST,
                 request.FILES,
@@ -33,6 +36,7 @@ def highlights_view(request):
                 )
                 return redirect("highlights")
         elif form_type == "mvp":
+            open_mvp_editor = True
             mvp_form = MVPForm(request.POST, instance=mvp)
             if mvp_form.is_valid():
                 saved_mvp = mvp_form.save(commit=False)
@@ -53,6 +57,8 @@ def highlights_view(request):
             "mvp": mvp,
             "highlight_form": highlight_form,
             "mvp_form": mvp_form,
+            "open_highlight_editor": open_highlight_editor,
+            "open_mvp_editor": open_mvp_editor,
             "active": "highlights",
         },
     )

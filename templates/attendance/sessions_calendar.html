@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-header-row">
+  <div>
+    <h1 class="page-header">Team Sessions</h1>
+    <p class="page-subtitle">Plan matches and practices in one team calendar. The schedule blocks overlapping sessions anywhere, and practices are limited to {{ home_venue }}.</p>
+  </div>
+  {% if request.user.is_coach %}
+  <a href="{% url 'match_create' %}" class="btn btn-blue">Create Session</a>
+  {% endif %}
+</div>
+
+<div class="calendar-shell">
+  <div class="calendar-toolbar">
+    <a href="?week={{ previous_week|date:'Y-m-d' }}" class="btn btn-primary">Previous Week</a>
+    <div class="calendar-range">{{ week_start|date:"M d" }} - {{ week_end|date:"M d, Y" }}</div>
+    <a href="?week={{ next_week|date:'Y-m-d' }}" class="btn btn-primary">Next Week</a>
+  </div>
+
+  <div class="team-calendar-grid team-calendar-grid-aligned">
+    <div class="team-calendar-corner">Time</div>
+    {% for day in calendar_days %}
+    <div class="team-calendar-day-header">
+      <strong>{{ day.date|date:"D" }}</strong>
+      <span>{{ day.date|date:"M d" }}</span>
+    </div>
+    {% endfor %}
+
+    {% for row in calendar_rows %}
+    <div class="team-calendar-time-cell">{{ row.label }}</div>
+      {% for slot in row.slots %}
+      <div class="team-calendar-slot">
+        <div class="slot-content">
+          {% if slot.sessions %}
+            {% for item in slot.sessions %}
+            <a href="{% url 'match_edit' item.session.id %}" class="session-chip session-{{ item.session.status|slugify }}">
+              <span class="session-chip-title">{{ item.session.title }}</span>
+              <span>{{ item.start|date:"g:i A" }} - {{ item.end|date:"g:i A" }}</span>
+              <span>{{ item.session.match_type }} | {{ item.session.location }}</span>
+            </a>
+            {% endfor %}
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    {% endfor %}
+  </div>
+</div>
+
+<div class="card space-top">
+  <div class="section-header">
+    <div>
+      <h2 class="section-title">Upcoming Team Sessions</h2>
+      <p class="section-subtitle">Use this list for quick edit, delete, stats, or attendance actions.</p>
+    </div>
+  </div>
+  <div class="table-responsive">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Session</th>
+          <th>Date</th>
+          <th>Type</th>
+          <th>Status</th>
+          <th>Location</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for session in upcoming_sessions %}
+        <tr>
+          <td>
+            <div class="table-title">{{ session.title }}</div>
+            <div class="table-meta">{{ session.duration_hours }} hour{% if session.duration_hours != 1 %}s{% endif %}</div>
+          </td>
+          <td>{{ session.date|date:"D, M d, Y | g:i A" }}</td>
+          <td>{{ session.match_type }}</td>
+          <td><span class="status-badge status-{{ session.status|slugify }}">{{ session.get_status_display }}</span></td>
+          <td>{{ session.location }}</td>
+          <td>
+            <div class="table-actions">
+              <a href="{% url 'attendance' %}?match={{ session.id }}&manage=1" class="btn btn-primary btn-sm">Manage Attendance</a>
+              {% if request.user.is_coach %}
+              <a href="{% url 'match_edit' session.id %}" class="btn btn-primary btn-sm">Edit</a>
+              <a href="{% url 'match_delete' session.id %}" class="btn btn-red btn-sm">Delete</a>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" class="empty-cell">No upcoming sessions are scheduled.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

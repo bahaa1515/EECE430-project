@@ -33,7 +33,7 @@ def statistics_view(request):
             status=Match.STATUS_UPCOMING,
         ).count(),
         "status_issues": Match.objects.filter(
-            status__in=[Match.STATUS_CANCELLED, Match.STATUS_POSTPONED, Match.STATUS_PROBLEM],
+            status__in=[Match.STATUS_CANCELLED, Match.STATUS_POSTPONED],
         ).count(),
     }
     attendance_breakdown = AttendanceRecord.objects.aggregate(
@@ -98,7 +98,7 @@ def player_stat_create(request):
     form = PlayerStatForm(request.POST or None, initial=initial)
     if request.method == "POST" and form.is_valid():
         stat = form.save()
-        messages.success(request, f"Match stats recorded for {stat.player.name}.")
+        messages.success(request, f"Player stats recorded for {stat.player.name}.")
         return redirect("statistics")
 
     return render(
@@ -119,7 +119,7 @@ def player_stat_edit(request, stat_id):
     form = PlayerStatForm(request.POST or None, instance=stat)
     if request.method == "POST" and form.is_valid():
         saved_stat = form.save()
-        messages.success(request, f"Match stats updated for {saved_stat.player.name}.")
+        messages.success(request, f"Player stats updated for {saved_stat.player.name}.")
         return redirect("statistics")
 
     return render(
@@ -141,7 +141,7 @@ def player_stat_delete(request, stat_id):
     if request.method == "POST":
         player_name = stat.player.name
         stat.delete()
-        messages.success(request, f"Match stats deleted for {player_name}.")
+        messages.success(request, f"Player stats deleted for {player_name}.")
         return redirect("statistics")
 
     return render(

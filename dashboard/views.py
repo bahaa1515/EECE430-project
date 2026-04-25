@@ -24,7 +24,9 @@ def dashboard_view(request):
             date__gte=now,
             status=Match.STATUS_UPCOMING,
         ).count(),
-        "needs_attention": Match.objects.filter(status=Match.STATUS_PROBLEM).count(),
+        "needs_attention": Match.objects.filter(
+            status__in=[Match.STATUS_CANCELLED, Match.STATUS_POSTPONED],
+        ).count(),
         "pending_notifications": NotificationRecipient.objects.filter(
             user=request.user,
             is_read=False,

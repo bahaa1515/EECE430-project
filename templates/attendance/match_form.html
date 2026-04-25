@@ -3,7 +3,7 @@
 <div class="page-header-row">
   <div>
     <h1 class="page-header">{{ page_title }}</h1>
-    <p class="page-subtitle">Set the session details once and keep match management inside the attendance workflow.</p>
+    <p class="page-subtitle">Schedule team sessions without overlaps. Practices stay at Charles Hostler, while matches can be home or away.</p>
   </div>
 </div>
 
@@ -47,11 +47,19 @@
       <div class="form-group full-width">
         <label for="{{ form.location.id_for_label }}">Location{% if form.location.field.required %}<span class="required-star">*</span>{% endif %}</label>
         {{ form.location }}
+        <datalist id="venue-options">
+          <option value="{{ home_venue|default:'Charles Hostler' }}">
+          <option value="LAU Stadium">
+          <option value="NDU Court">
+          <option value="USJ Sports Complex">
+          <option value="BAU Arena">
+        </datalist>
         {{ form.location.errors }}
+        <div class="helper-text">Practices must be at {{ home_venue|default:'Charles Hostler' }}. Away venues are valid for matches only.</div>
       </div>
     </div>
     <div class="form-actions">
-      <a href="{% url 'attendance' %}" class="btn btn-primary">Cancel</a>
+      <a href="{% url 'sessions_calendar' %}" class="btn btn-primary">Cancel</a>
       <button type="submit" class="btn btn-blue">{{ submit_label }}</button>
     </div>
   </form>

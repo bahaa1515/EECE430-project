@@ -10,13 +10,11 @@ class Match(models.Model):
     STATUS_COMPLETED = 'Completed'
     STATUS_CANCELLED = 'Cancelled'
     STATUS_POSTPONED = 'Postponed'
-    STATUS_PROBLEM = 'Problem'
     STATUS_CHOICES = [
         (STATUS_UPCOMING, 'Upcoming'),
         (STATUS_COMPLETED, 'Completed'),
         (STATUS_CANCELLED, 'Cancelled'),
         (STATUS_POSTPONED, 'Postponed'),
-        (STATUS_PROBLEM, 'Problem / Needs Attention'),
     ]
 
     title = models.CharField(max_length=200)

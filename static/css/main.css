@@ -369,6 +369,132 @@ body {
 .mvp-card { display: flex; gap: 20px; align-items: center; }
 .mvp-name { font-size: 18px; font-weight: 700; margin-bottom: 12px; }
 .mvp-stats { font-size: 14px; color: var(--gray-700); line-height: 1.8; }
+.editor-panel {
+  display: none;
+}
+.editor-panel.is-open {
+  display: block;
+}
+
+/* ===== TEAM SESSIONS CALENDAR ===== */
+.calendar-shell {
+  background: white;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  padding: 18px;
+}
+.calendar-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.calendar-range {
+  font-weight: 700;
+  color: var(--gray-900);
+}
+.team-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(180px, 1fr));
+  gap: 10px;
+  overflow-x: auto;
+}
+.team-calendar-grid-aligned {
+  grid-template-columns: 72px repeat(7, minmax(170px, 1fr));
+  gap: 0;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius);
+  overflow-x: auto;
+}
+.team-calendar-day {
+  min-width: 180px;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: white;
+}
+.team-calendar-day-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 170px;
+  min-height: 48px;
+  padding: 10px;
+  background: white;
+  border-right: 1px solid var(--gray-200);
+  border-bottom: 1px solid var(--gray-200);
+  font-size: 12px;
+  color: var(--gray-700);
+}
+.team-calendar-corner,
+.team-calendar-time-cell {
+  background: var(--gray-50);
+  border-right: 1px solid var(--gray-200);
+  border-bottom: 1px solid var(--gray-200);
+  color: var(--gray-500);
+  font-size: 11px;
+  font-weight: 700;
+}
+.team-calendar-corner {
+  min-height: 48px;
+  padding: 10px;
+}
+.team-calendar-time-cell {
+  height: 86px;
+  padding: 10px 8px;
+}
+.team-calendar-slot {
+  min-width: 170px;
+  height: 86px;
+  border-bottom: 1px solid var(--gray-200);
+  border-right: 1px solid var(--gray-200);
+  padding: 7px;
+  overflow: hidden;
+}
+.team-calendar-slot:last-child { border-bottom: none; }
+.slot-time {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--gray-500);
+  margin-bottom: 4px;
+}
+.slot-content {
+  display: grid;
+  gap: 6px;
+}
+.session-chip {
+  display: grid;
+  gap: 2px;
+  border-radius: 6px;
+  padding: 8px;
+  font-size: 11px;
+  line-height: 1.35;
+}
+.session-chip {
+  text-decoration: none;
+  background: white;
+  border: 1px solid var(--gray-200);
+  color: var(--gray-700);
+  height: 72px;
+  overflow: hidden;
+}
+.session-chip:hover {
+  border-color: var(--blue);
+  color: var(--blue-dark);
+}
+.session-chip-title {
+  font-weight: 700;
+  color: var(--gray-900);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.session-upcoming { border-left: 4px solid var(--blue); }
+.session-completed { border-left: 4px solid var(--green); }
+.session-postponed { border-left: 4px solid #F59E0B; }
+.session-cancelled { border-left: 4px solid var(--red); opacity: 0.75; }
 
 /* ===== MODAL ===== */
 .modal-overlay {
@@ -683,7 +809,6 @@ body {
 .status-completed { background: #DCFCE7; color: #166534; }
 .status-cancelled { background: #FEE2E2; color: #B91C1C; }
 .status-postponed { background: #FEF3C7; color: #B45309; }
-.status-problem { background: #FDE68A; color: #92400E; }
 .status-good { background: #DCFCE7; color: #166534; }
 .status-warning { background: #FEF3C7; color: #92400E; }
 .status-good-text { color: #166534; font-weight: 700; }

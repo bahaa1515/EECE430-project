@@ -11,7 +11,12 @@
 <div class="card" style="margin-bottom:20px;">
   <div class="highlight-card">
     <div class="highlight-text">
-      <div class="highlight-title">{{ highlight.title }}</div>
+      <div class="section-header" style="margin-bottom:8px;">
+        <div class="highlight-title">{{ highlight.title }}</div>
+        {% if request.user.is_coach %}
+        <button type="button" class="btn btn-primary btn-sm" data-editor-toggle="highlight-editor">{% if highlight %}Edit Highlight{% else %}Create Highlight{% endif %}</button>
+        {% endif %}
+      </div>
       {% if highlight.session %}
       <div class="table-meta" style="margin-bottom:10px;">Session: {{ highlight.session.title }} | {{ highlight.session.date|date:"M d, Y | g:i A" }}</div>
       {% endif %}
@@ -32,12 +37,24 @@
   </div>
 </div>
 {% else %}
-<div class="card empty-state-card" style="margin-bottom:20px;">No highlights posted yet.</div>
+<div class="card empty-state-card" style="margin-bottom:20px;">
+  No highlights posted yet.
+  {% if request.user.is_coach %}
+  <div style="margin-top:14px;">
+    <button type="button" class="btn btn-primary btn-sm" data-editor-toggle="highlight-editor">Create Highlight</button>
+  </div>
+  {% endif %}
+</div>
 {% endif %}
 
 {% if mvp %}
 <div class="card">
-  <h3 style="font-size:14px;color:var(--gray-500);font-weight:600;margin-bottom:4px;">Team Most Valuable Player</h3>
+  <div class="section-header" style="margin-bottom:4px;">
+    <h3 style="font-size:14px;color:var(--gray-500);font-weight:600;">Team Most Valuable Player</h3>
+    {% if request.user.is_coach %}
+    <button type="button" class="btn btn-primary btn-sm" data-editor-toggle="mvp-editor">{% if mvp %}Edit MVP{% else %}Create MVP{% endif %}</button>
+    {% endif %}
+  </div>
   {% if mvp.session %}
   <div class="table-meta" style="margin-bottom:12px;">Session: {{ mvp.session.title }} | {{ mvp.session.date|date:"M d, Y | g:i A" }}</div>
   {% endif %}
@@ -59,16 +76,24 @@
   </div>
 </div>
 {% else %}
-<div class="card empty-state-card">No MVP selected yet.</div>
+<div class="card empty-state-card">
+  No MVP selected yet.
+  {% if request.user.is_coach %}
+  <div style="margin-top:14px;">
+    <button type="button" class="btn btn-primary btn-sm" data-editor-toggle="mvp-editor">Create MVP</button>
+  </div>
+  {% endif %}
+</div>
 {% endif %}
 
 {% if request.user.is_coach %}
-<div class="form-page-card" style="margin-top:20px;">
+<div id="highlight-editor" class="form-page-card editor-panel {% if open_highlight_editor %}is-open{% endif %}" style="margin-top:20px;">
   <div class="section-header">
     <div>
       <h2 class="section-title">Manage Highlight</h2>
       <p class="section-subtitle">Select the exact match or practice and update the featured highlight content.</p>
     </div>
+    <button type="button" class="btn btn-primary btn-sm" data-editor-close="highlight-editor">Close</button>
   </div>
   <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
@@ -106,12 +131,13 @@
   </form>
 </div>
 
-<div class="form-page-card" style="margin-top:20px;">
+<div id="mvp-editor" class="form-page-card editor-panel {% if open_mvp_editor %}is-open{% endif %}" style="margin-top:20px;">
   <div class="section-header">
     <div>
       <h2 class="section-title">Manage MVP</h2>
       <p class="section-subtitle">Choose the player and the exact session so the MVP section is explicit and easy to understand.</p>
     </div>
+    <button type="button" class="btn btn-primary btn-sm" data-editor-close="mvp-editor">Close</button>
   </div>
   <form method="post">
     {% csrf_token %}
@@ -154,4 +180,25 @@
   </form>
 </div>
 {% endif %}
+<script>
+document.querySelectorAll('[data-editor-toggle]').forEach(function (button) {
+  button.addEventListener('click', function () {
+    var panel = document.getElementById(button.getAttribute('data-editor-toggle'));
+    if (!panel) {
+      return;
+    }
+    panel.classList.toggle('is-open');
+  });
+});
+
+document.querySelectorAll('[data-editor-close]').forEach(function (button) {
+  button.addEventListener('click', function () {
+    var panel = document.getElementById(button.getAttribute('data-editor-close'));
+    if (!panel) {
+      return;
+    }
+    panel.classList.remove('is-open');
+  });
+});
+</script>
 {% endblock %}

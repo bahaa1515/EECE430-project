@@ -295,7 +295,7 @@ class Command(BaseCommand):
             self.style.SUCCESS(
                 "\nDatabase seeded successfully!\n"
                 "Coach login: email=bh00@aub.edu.lb password=coach123\n"
-                "Student login: email=bh01@mail.aub.edu password=student123\n"
+                "Player login: email=bh01@mail.aub.edu password=student123\n"
                 "Admin panel: http://127.0.0.1:8000/admin/\n"
             )
         )

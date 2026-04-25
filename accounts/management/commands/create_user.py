@@ -8,7 +8,7 @@ from django.core.management.base import BaseCommand, CommandError
 from accounts.models import CustomUser
 
 class Command(BaseCommand):
-    help = 'Create a new platform user (student or coach)'
+    help = 'Create a new platform user (player or coach)'
 
     def add_arguments(self, parser):
         parser.add_argument('--username',  required=True)
