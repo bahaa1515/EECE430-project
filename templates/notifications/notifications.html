@@ -5,12 +5,12 @@
     <h1 class="page-header">Notifications</h1>
     <p class="page-subtitle">Each user has an independent read state, so this list reflects your own status only.</p>
   </div>
-  {% if request.user.is_coach %}
+  {% if request.user.is_staff_role %}
   <a href="?{% if querystring %}{{ querystring }}&{% endif %}add=1" class="btn btn-blue">Create Notification</a>
   {% endif %}
 </div>
 
-{% if show_add and request.user.is_coach %}
+{% if show_add and request.user.is_staff_role %}
 <div class="form-page-card notifications-create-card">
   <div class="section-header">
     <div>
@@ -79,15 +79,45 @@
     {% endif %}
     <div class="notif-meta">Posted {{ item.notification.created_at|date:"D, M d, Y | H:i" }}</div>
     <div class="notif-meta">Action: <strong>{{ item.notification.action }}</strong></div>
+    {% if not item.is_own_notification %}
     <div class="notif-meta">
       Status:
       <span class="{% if item.is_read %}status-good-text{% else %}status-danger-text{% endif %}">
         {% if item.is_read %}Read{% else %}Unread{% endif %}
       </span>
     </div>
+    {% endif %}
     {% if item.notification.created_by %}
     <div class="notif-meta">Posted by {{ item.notification.created_by.get_full_name|default:item.notification.created_by.username }}</div>
     {% endif %}
+    {% if item.is_own_notification %}
+    <div class="notif-actions">
+      <button type="button" class="btn btn-primary btn-sm" onclick="
+        var panel = this.parentElement.querySelector('.readlist-panel');
+        var hidden = panel.style.display === 'none' || panel.style.display === '';
+        panel.style.display = hidden ? 'block' : 'none';
+        this.textContent = hidden ? 'Hide' : 'Who read this?';
+      ">Who read this?</button>
+      <div class="readlist-panel" style="display:none;margin-top:10px;font-size:13px;">
+        <div style="margin-bottom:4px;">
+          <strong style="color:#16a34a;">Read ({{ item.read_recipients|length }}):</strong>
+          {% if item.read_recipients %}
+            {% for r in item.read_recipients %}{{ r.user.get_full_name|default:r.user.username }}{% if not forloop.last %}, {% endif %}{% endfor %}
+          {% else %}
+            <span style="color:#6b7280;">Nobody yet</span>
+          {% endif %}
+        </div>
+        <div>
+          <strong style="color:#dc2626;">Unread ({{ item.unread_recipients|length }}):</strong>
+          {% if item.unread_recipients %}
+            {% for r in item.unread_recipients %}{{ r.user.get_full_name|default:r.user.username }}{% if not forloop.last %}, {% endif %}{% endfor %}
+          {% else %}
+            <span style="color:#6b7280;">Everyone has read it</span>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% else %}
     <div class="notif-actions">
       <form method="post" action="{% url 'notification_action' item.notification.id %}">
         {% csrf_token %}
@@ -95,6 +125,7 @@
         <button type="submit" class="btn btn-primary btn-sm">{% if item.is_read %}Mark Unread{% else %}Mark Read{% endif %}</button>
       </form>
     </div>
+    {% endif %}
   </div>
   {% empty %}
   <div class="card empty-state-card">No notifications matched your filters.</div>

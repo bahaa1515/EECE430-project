@@ -13,7 +13,7 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('--username',  required=True)
         parser.add_argument('--password',  required=True)
-        parser.add_argument('--role',      default='student', choices=['student','coach'])
+        parser.add_argument('--role',      default='player', choices=['player','coach','manager'])
         parser.add_argument('--first',     default='')
         parser.add_argument('--last',      default='')
         parser.add_argument('--email',     default='')

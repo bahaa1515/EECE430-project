@@ -1,0 +1,19 @@
+services:
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      # Persist the SQLite database and uploaded media between restarts
+      - ./db.sqlite3:/app/db.sqlite3
+      - ./media:/app/media
+    environment:
+      - DJANGO_SETTINGS_MODULE=volleyball.settings
+    command: >
+      sh -c "python manage.py migrate --noinput &&
+             gunicorn volleyball.wsgi:application
+             --bind 0.0.0.0:8000
+             --workers 3
+             --timeout 120
+             --access-logfile -"
+    restart: unless-stopped

@@ -6,7 +6,7 @@
     <p class="page-subtitle">Player profile with live match stats where available and manual roster totals where they are maintained.</p>
   </div>
   <div class="table-actions">
-    {% if request.user.is_coach %}
+    {% if request.user.is_staff_role %}
     <a href="{% url 'player_stat_create' %}?player={{ player.id }}" class="btn btn-green">Add Player Stats</a>
     <a href="{% url 'player_edit' player.id %}" class="btn btn-blue">Edit Player</a>
     {% endif %}
@@ -99,7 +99,7 @@
           <th>Blocks</th>
           <th>Aces</th>
           <th>MVP</th>
-          {% if request.user.is_coach %}<th>Actions</th>{% endif %}
+          {% if request.user.is_staff_role %}<th>Actions</th>{% endif %}
         </tr>
       </thead>
       <tbody>
@@ -111,7 +111,7 @@
           <td>{{ stat.blocks }}</td>
           <td>{{ stat.aces }}</td>
           <td>{% if stat.mvp %}Yes{% else %}No{% endif %}</td>
-          {% if request.user.is_coach %}
+          {% if request.user.is_staff_role %}
           <td>
             <div class="table-actions">
               <a href="{% url 'player_stat_edit' stat.id %}" class="btn btn-primary btn-sm">Edit</a>
@@ -121,7 +121,7 @@
           {% endif %}
         </tr>
         {% empty %}
-        <tr><td colspan="{% if request.user.is_coach %}7{% else %}6{% endif %}" class="empty-cell">No recorded match statistics are available for this player yet.</td></tr>
+        <tr><td colspan="{% if request.user.is_staff_role %}7{% else %}6{% endif %}" class="empty-cell">No recorded match statistics are available for this player yet.</td></tr>
         {% endfor %}
       </tbody>
     </table>

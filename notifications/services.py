@@ -17,6 +17,10 @@ def create_notification(
     if recipient_queryset is None:
         recipient_queryset = get_user_model().objects.filter(is_active=True)
 
+    # The creator is never a recipient — they sent it, they don't receive it
+    if created_by is not None:
+        recipient_queryset = recipient_queryset.exclude(pk=created_by.pk)
+
     with transaction.atomic():
         notification = Notification.objects.create(
             title=title,

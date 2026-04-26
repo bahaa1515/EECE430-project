@@ -1064,3 +1064,13 @@ body {
     justify-self: start;
   }
 }
+
+
+/* Notification read/unread breakdown (for creators) */
+.notif-readlist { margin-top: 10px; font-size: 13px; }
+.notif-readlist-label { font-weight: 600; color: var(--gray-700, #374151); margin-bottom: 6px; }
+.notif-readlist-group { margin-top: 4px; }
+.notif-readlist-title { font-weight: 600; margin-right: 4px; }
+.notif-readlist-title.read { color: #16a34a; }
+.notif-readlist-title.unread { color: #dc2626; }
+.notif-readlist-name { color: var(--gray-600, #4b5563); }

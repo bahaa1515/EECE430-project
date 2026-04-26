@@ -4,7 +4,7 @@ from django.db.models import Count, Q, Sum
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
-from accounts.permissions import coach_required
+from accounts.permissions import manager_required
 from attendance.models import AttendanceRecord, Match
 from players.models import Player
 
@@ -88,7 +88,7 @@ def statistics_view(request):
     )
 
 
-@coach_required
+@manager_required
 def player_stat_create(request):
     initial = {}
     player_id = request.GET.get("player")
@@ -113,7 +113,7 @@ def player_stat_create(request):
     )
 
 
-@coach_required
+@manager_required
 def player_stat_edit(request, stat_id):
     stat = get_object_or_404(PlayerStat.objects.select_related("player"), pk=stat_id)
     form = PlayerStatForm(request.POST or None, instance=stat)
@@ -135,7 +135,7 @@ def player_stat_edit(request, stat_id):
     )
 
 
-@coach_required
+@manager_required
 def player_stat_delete(request, stat_id):
     stat = get_object_or_404(PlayerStat.objects.select_related("player"), pk=stat_id)
     if request.method == "POST":
@@ -154,7 +154,7 @@ def player_stat_delete(request, stat_id):
     )
 
 
-@coach_required
+@manager_required
 def session_stat_create(request):
     initial = {}
     match_id = request.GET.get("match")
@@ -185,7 +185,7 @@ def session_stat_create(request):
     )
 
 
-@coach_required
+@manager_required
 def session_stat_edit(request, stat_id):
     stat = get_object_or_404(SessionStat.objects.select_related("match"), pk=stat_id)
     form = SessionStatForm(request.POST or None, instance=stat)
@@ -207,7 +207,7 @@ def session_stat_edit(request, stat_id):
     )
 
 
-@coach_required
+@manager_required
 def session_stat_delete(request, stat_id):
     stat = get_object_or_404(SessionStat.objects.select_related("match"), pk=stat_id)
     if request.method == "POST":

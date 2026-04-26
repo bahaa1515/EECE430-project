@@ -9,8 +9,22 @@ from django.urls import reverse
 from django.utils import timezone
 
 from .forms import NotificationForm
-from .models import NotificationRecipient
+from .models import Notification, NotificationRecipient
 from .services import create_notification
+
+
+def _attach_breakdown(item):
+    """Attach read/unread recipient lists — always excludes the creator."""
+    creator_id = item.notification.created_by_id
+    recipients = (
+        NotificationRecipient.objects.filter(notification=item.notification)
+        .select_related("user")
+        .order_by("is_read", "user__first_name", "user__last_name")
+    )
+    # Never show the creator in either list
+    recipients = [r for r in recipients if r.user_id != creator_id]
+    item.read_recipients   = [r for r in recipients if r.is_read]
+    item.unread_recipients = [r for r in recipients if not r.is_read]
 
 
 def _build_querystring(query, filter_status):
@@ -30,7 +44,7 @@ def notifications_list(request):
 
     form = NotificationForm()
     if request.method == "POST":
-        if not request.user.is_coach():
+        if not request.user.is_staff_role():
             raise PermissionDenied
 
         form = NotificationForm(request.POST)
@@ -46,22 +60,54 @@ def notifications_list(request):
             messages.success(request, "Notification posted for the team.")
             return redirect("notifications")
 
-    notifications = NotificationRecipient.objects.filter(user=request.user).select_related(
-        "notification",
-        "notification__created_by",
+    # Recipients see their own NotificationRecipient rows.
+    # Creators see a synthetic row so their own notifications stay visible.
+    received = NotificationRecipient.objects.filter(user=request.user).select_related(
+        "notification", "notification__created_by",
     )
     if query:
-        notifications = notifications.filter(
-            notification__title__icontains=query,
-        ) | notifications.filter(
-            notification__description__icontains=query,
-        )
+        received = received.filter(notification__title__icontains=query) | \
+                   received.filter(notification__description__icontains=query)
     if filter_status == "Unread":
-        notifications = notifications.filter(is_read=False)
+        received = received.filter(is_read=False)
     elif filter_status == "Read":
-        notifications = notifications.filter(is_read=True)
+        received = received.filter(is_read=True)
 
-    notifications = notifications.order_by("is_read", "-notification__created_at")
+    received = list(received.order_by("is_read", "-notification__created_at"))
+
+    # Attach own-notification flag + breakdown to received items
+    received_notif_ids = {item.notification_id for item in received}
+    for item in received:
+        item.is_own_notification = (item.notification.created_by_id == request.user.id)
+        if item.is_own_notification:
+            _attach_breakdown(item)
+
+    # Add created-by-me notifications that aren't already in the received list
+    own_notifs = Notification.objects.filter(created_by=request.user).select_related("created_by")
+    if query:
+        own_notifs = own_notifs.filter(title__icontains=query) | \
+                     own_notifs.filter(description__icontains=query)
+    own_notifs = own_notifs.order_by("-created_at")
+
+    class _OwnItem:
+        """Wraps a Notification so it looks like a NotificationRecipient to the template."""
+        is_read = True          # creators have no read state
+        is_own_notification = True
+
+        def __init__(self, notification):
+            self.notification = notification
+
+    extra = []
+    for notif in own_notifs:
+        if notif.id not in received_notif_ids:
+            item = _OwnItem(notif)
+            _attach_breakdown(item)
+            extra.append(item)
+
+    notifications = received + extra
+    # Re-sort: own notifications (created) first, then by date
+    notifications.sort(key=lambda x: x.notification.created_at, reverse=True)
+
     paginator = Paginator(notifications, 6)
     notifications_page = paginator.get_page(request.GET.get("page", 1))
 

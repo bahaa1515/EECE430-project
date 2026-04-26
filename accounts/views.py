@@ -4,25 +4,32 @@ from django.contrib import messages
 from .models import CustomUser
 
 PLAYER_EMAIL_DOMAIN = '@mail.aub.edu'
-COACH_EMAIL_DOMAIN = '@aub.edu.lb'
+STAFF_EMAIL_DOMAIN = '@aub.edu.lb'   # shared by coaches and managers
 
 
 def _role_label(role):
-    return "player" if role == CustomUser.ROLE_STUDENT else "coach"
+    labels = {
+        CustomUser.ROLE_PLAYER: 'player',
+        CustomUser.ROLE_COACH: 'coach',
+        CustomUser.ROLE_MANAGER: 'manager',
+    }
+    return labels.get(role, role)
+
+
+def _expected_domain(role):
+    return PLAYER_EMAIL_DOMAIN if role == CustomUser.ROLE_PLAYER else STAFF_EMAIL_DOMAIN
 
 
 def login_view(request):
     if request.user.is_authenticated:
         return redirect('dashboard')
-    role = request.GET.get('role', 'student')
+    role = request.GET.get('role', CustomUser.ROLE_PLAYER)
     if request.method == 'POST':
         email = request.POST.get('email', '').strip().lower()
         password = request.POST.get('password', '').strip()
-        role = request.POST.get('role', 'student')
+        role = request.POST.get('role', CustomUser.ROLE_PLAYER)
         remember = request.POST.get('remember_me')
-        expected_domain = (
-            PLAYER_EMAIL_DOMAIN if role == CustomUser.ROLE_STUDENT else COACH_EMAIL_DOMAIN
-        )
+        expected_domain = _expected_domain(role)
 
         if not email:
             messages.error(request, 'Please enter your AUB email address.')
@@ -62,37 +69,37 @@ def login_view(request):
 def signup_view(request):
     if request.user.is_authenticated:
         return redirect('dashboard')
-    role = request.GET.get('role', 'student')
+    role = request.GET.get('role', CustomUser.ROLE_PLAYER)
     if request.method == 'POST':
         password1  = request.POST.get('password1', '')
         password2  = request.POST.get('password2', '')
         first_name = request.POST.get('first_name', '').strip()
         last_name  = request.POST.get('last_name', '').strip()
         email      = request.POST.get('email', '').strip().lower()
-        role       = request.POST.get('role', 'student')
-        username   = email.split('@')[0] if '@' in email else ''
+        role       = request.POST.get('role', CustomUser.ROLE_PLAYER)
+        base_username = email.split('@')[0] if '@' in email else ''
+        expected = _expected_domain(role)
 
         if not first_name or not last_name or not email:
             messages.error(request, 'First name, last name, and AUB email are required.')
-        elif role == CustomUser.ROLE_STUDENT and not email.endswith(PLAYER_EMAIL_DOMAIN):
+        elif not email.endswith(expected):
             messages.error(
                 request,
-                f'Please use your player AUB email address ending in {PLAYER_EMAIL_DOMAIN}.',
-            )
-        elif role == CustomUser.ROLE_COACH and not email.endswith(COACH_EMAIL_DOMAIN):
-            messages.error(
-                request,
-                f'Please use your coach AUB email address ending in {COACH_EMAIL_DOMAIN}.',
+                f'Please use your {_role_label(role)} AUB email address ending in {expected}.',
             )
         elif CustomUser.objects.filter(email__iexact=email).exists():
             messages.error(request, 'An account with this email already exists.')
-        elif CustomUser.objects.filter(username=username).exists():
-            messages.error(request, 'This AUB email is already linked to an existing username.')
         elif len(password1) < 6:
             messages.error(request, 'Password must be at least 6 characters.')
         elif password1 != password2:
             messages.error(request, 'Passwords do not match.')
         else:
+            # Build a unique username: try base_username, then base_username2, base_username3 …
+            username = base_username
+            counter = 2
+            while CustomUser.objects.filter(username=username).exists():
+                username = f'{base_username}{counter}'
+                counter += 1
             user = CustomUser.objects.create_user(
                 username=username, password=password1,
                 first_name=first_name, last_name=last_name,

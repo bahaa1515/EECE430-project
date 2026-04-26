@@ -3,7 +3,13 @@
 <div class="page-header-row">
   <div>
     <h1 class="page-header">{{ page_title }}</h1>
-    <p class="page-subtitle">Use this form to keep roster information up to date and link each player to their AUB player email.</p>
+    <p class="page-subtitle">
+      {% if is_create %}
+        Fill in the player's account details and profile. A login will be created automatically.
+      {% else %}
+        Update the player's profile and roster information.
+      {% endif %}
+    </p>
   </div>
 </div>
 
@@ -13,31 +19,63 @@
     {% if form.non_field_errors %}
     <div class="alert-error">{{ form.non_field_errors|join:", " }}</div>
     {% endif %}
-    <div class="form-grid-2">
-      <div class="form-group"><label for="{{ form.name.id_for_label }}">Name{% if form.name.field.required %}<span class="required-star">*</span>{% endif %}</label>{{ form.name }}{{ form.name.errors }}</div>
-      <div class="form-group"><label for="{{ form.jersey_number.id_for_label }}">Jersey Number{% if form.jersey_number.field.required %}<span class="required-star">*</span>{% endif %}</label>{{ form.jersey_number }}{{ form.jersey_number.errors }}</div>
-      <div class="form-group"><label for="{{ form.position.id_for_label }}">Position{% if form.position.field.required %}<span class="required-star">*</span>{% endif %}</label>{{ form.position }}{{ form.position.errors }}</div>
-      <div class="form-group"><label for="{{ form.player_type.id_for_label }}">Role{% if form.player_type.field.required %}<span class="required-star">*</span>{% endif %}</label>{{ form.player_type }}{{ form.player_type.errors }}</div>
-      <div class="form-group full-width">
-        <label for="{{ form.user.id_for_label }}">Linked Player AUB Email{% if form.user.field.required %}<span class="required-star">*</span>{% endif %}</label>
-        {{ form.user }}
-        <div class="helper-text">{{ form.user.help_text }}</div>
-        {{ form.user.errors }}
+
+    {% if is_create %}
+    <!-- ── Account creation ── -->
+    <h3 style="margin:0 0 14px;font-size:14px;font-weight:700;color:var(--gray-700);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border);padding-bottom:8px;">
+      Player Account
+    </h3>
+    <div class="form-grid-2" style="margin-bottom:24px;">
+      <div class="form-group">
+        <label for="{{ form.first_name.id_for_label }}">First Name <span class="required-star">*</span></label>
+        {{ form.first_name }}{{ form.first_name.errors }}
       </div>
-      <div class="form-group full-width"><label for="{{ form.photo.id_for_label }}">Photo{% if form.photo.field.required %}<span class="required-star">*</span>{% endif %}</label>{{ form.photo }}{{ form.photo.errors }}</div>
-      <div class="form-group"><label for="{{ form.points.id_for_label }}">Points{% if form.points.field.required %}<span class="required-star">*</span>{% endif %}</label>{{ form.points }}{{ form.points.errors }}</div>
-      <div class="form-group"><label for="{{ form.kills.id_for_label }}">Kills{% if form.kills.field.required %}<span class="required-star">*</span>{% endif %}</label>{{ form.kills }}{{ form.kills.errors }}</div>
-      <div class="form-group"><label for="{{ form.blocks.id_for_label }}">Blocks{% if form.blocks.field.required %}<span class="required-star">*</span>{% endif %}</label>{{ form.blocks }}{{ form.blocks.errors }}</div>
-      <div class="form-group"><label for="{{ form.aces.id_for_label }}">Aces{% if form.aces.field.required %}<span class="required-star">*</span>{% endif %}</label>{{ form.aces }}{{ form.aces.errors }}</div>
-      <div class="form-group"><label for="{{ form.digs.id_for_label }}">Digs{% if form.digs.field.required %}<span class="required-star">*</span>{% endif %}</label>{{ form.digs }}{{ form.digs.errors }}</div>
-      <div class="form-group"><label for="{{ form.assists.id_for_label }}">Assists{% if form.assists.field.required %}<span class="required-star">*</span>{% endif %}</label>{{ form.assists }}{{ form.assists.errors }}</div>
-      <div class="form-group"><label for="{{ form.attack_pct.id_for_label }}">Attack %{% if form.attack_pct.field.required %}<span class="required-star">*</span>{% endif %}</label>{{ form.attack_pct }}{{ form.attack_pct.errors }}</div>
-      <div class="form-group"><label for="{{ form.perfect_recv_pct.id_for_label }}">Perfect Reception %{% if form.perfect_recv_pct.field.required %}<span class="required-star">*</span>{% endif %}</label>{{ form.perfect_recv_pct }}{{ form.perfect_recv_pct.errors }}</div>
-      <div class="form-group full-width checkbox-row">
-        <label>{{ form.is_active }} Active player</label>
-        {{ form.is_active.errors }}
+      <div class="form-group">
+        <label for="{{ form.last_name.id_for_label }}">Last Name <span class="required-star">*</span></label>
+        {{ form.last_name }}{{ form.last_name.errors }}
+      </div>
+      <div class="form-group full-width">
+        <label for="{{ form.email.id_for_label }}">AUB Email <span class="required-star">*</span></label>
+        {{ form.email }}
+        <div class="helper-text">{{ form.email.help_text }}</div>
+        {{ form.email.errors }}
+      </div>
+      <div class="form-group">
+        <label for="{{ form.password.id_for_label }}">Password <span class="required-star">*</span></label>
+        {{ form.password }}{{ form.password.errors }}
+      </div>
+      <div class="form-group">
+        <label for="{{ form.password_confirm.id_for_label }}">Confirm Password <span class="required-star">*</span></label>
+        {{ form.password_confirm }}{{ form.password_confirm.errors }}
       </div>
     </div>
+    {% endif %}
+
+    <!-- ── Player profile ── -->
+    <h3 style="margin:0 0 14px;font-size:14px;font-weight:700;color:var(--gray-700);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border);padding-bottom:8px;">
+      Player Profile
+    </h3>
+    <div class="form-grid-2">
+      {% if not is_create %}
+      <div class="form-group"><label for="{{ form.name.id_for_label }}">Name <span class="required-star">*</span></label>{{ form.name }}{{ form.name.errors }}</div>
+      {% endif %}
+      <div class="form-group"><label for="{{ form.jersey_number.id_for_label }}">Jersey Number <span class="required-star">*</span></label>{{ form.jersey_number }}{{ form.jersey_number.errors }}</div>
+      <div class="form-group"><label for="{{ form.position.id_for_label }}">Position <span class="required-star">*</span></label>{{ form.position }}{{ form.position.errors }}</div>
+      <div class="form-group"><label for="{{ form.player_type.id_for_label }}">Role <span class="required-star">*</span></label>{{ form.player_type }}{{ form.player_type.errors }}</div>
+      <div class="form-group full-width"><label for="{{ form.photo.id_for_label }}">Photo</label>{{ form.photo }}{{ form.photo.errors }}</div>
+      <div class="form-group"><label for="{{ form.points.id_for_label }}">Points</label>{{ form.points }}{{ form.points.errors }}</div>
+      <div class="form-group"><label for="{{ form.kills.id_for_label }}">Kills</label>{{ form.kills }}{{ form.kills.errors }}</div>
+      <div class="form-group"><label for="{{ form.blocks.id_for_label }}">Blocks</label>{{ form.blocks }}{{ form.blocks.errors }}</div>
+      <div class="form-group"><label for="{{ form.aces.id_for_label }}">Aces</label>{{ form.aces }}{{ form.aces.errors }}</div>
+      <div class="form-group"><label for="{{ form.digs.id_for_label }}">Digs</label>{{ form.digs }}{{ form.digs.errors }}</div>
+      <div class="form-group"><label for="{{ form.assists.id_for_label }}">Assists</label>{{ form.assists }}{{ form.assists.errors }}</div>
+      <div class="form-group"><label for="{{ form.attack_pct.id_for_label }}">Attack %</label>{{ form.attack_pct }}{{ form.attack_pct.errors }}</div>
+      <div class="form-group"><label for="{{ form.perfect_recv_pct.id_for_label }}">Perfect Reception %</label>{{ form.perfect_recv_pct }}{{ form.perfect_recv_pct.errors }}</div>
+      <div class="form-group full-width checkbox-row">
+        <label>{{ form.is_active }} Active player</label>{{ form.is_active.errors }}
+      </div>
+    </div>
+
     <div class="form-actions">
       <a href="{% url 'players' %}" class="btn btn-primary">Cancel</a>
       <button type="submit" class="btn btn-blue">{{ submit_label }}</button>

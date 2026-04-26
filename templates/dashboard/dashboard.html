@@ -75,8 +75,8 @@
       <a href="{% url 'statistics' %}" class="quick-action">Open Statistics</a>
       <a href="{% url 'highlights' %}" class="quick-action">Highlights</a>
       <a href="{% url 'notifications' %}" class="quick-action">Notifications</a>
-      {% if request.user.is_coach %}
-      <a href="{% url 'sessions_calendar' %}" class="quick-action accent">Team Sessions</a>
+      {% if request.user.is_staff_role %}
+      <a href="{% url 'match_create' %}" class="quick-action accent">Create Session</a>
       <a href="{% url 'player_add' %}" class="quick-action accent">Add Player</a>
       {% endif %}
     </div>

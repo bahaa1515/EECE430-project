@@ -7,7 +7,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from accounts.permissions import coach_required
 from statistics_app.models import PlayerStat
 
-from .forms import PlayerForm, SwapStarterForm
+from .forms import PlayerCreateForm, PlayerEditForm, SwapStarterForm
 from .models import Player
 
 
@@ -63,10 +63,10 @@ def player_detail(request, player_id):
 
 @coach_required
 def player_add(request):
-    form = PlayerForm(request.POST or None, request.FILES or None)
+    form = PlayerCreateForm(request.POST or None, request.FILES or None)
     if request.method == "POST" and form.is_valid():
         player = form.save()
-        messages.success(request, f"{player.name} was added to the roster.")
+        messages.success(request, f"{player.name} was added to the roster. They can log in with {player.user.email}.")
         return redirect("players")
 
     return render(
@@ -76,6 +76,7 @@ def player_add(request):
             "form": form,
             "page_title": "Add Player",
             "submit_label": "Add Player",
+            "is_create": True,
             "active": "players",
         },
     )
@@ -84,7 +85,7 @@ def player_add(request):
 @coach_required
 def player_edit(request, player_id):
     player = get_object_or_404(Player, pk=player_id)
-    form = PlayerForm(request.POST or None, request.FILES or None, instance=player)
+    form = PlayerEditForm(request.POST or None, request.FILES or None, instance=player)
     if request.method == "POST" and form.is_valid():
         updated_player = form.save()
         messages.success(request, f"{updated_player.name} was updated.")

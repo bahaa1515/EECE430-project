@@ -37,7 +37,7 @@ class Command(BaseCommand):
         student.first_name = "Bahaa"
         student.last_name = "Hamdan"
         student.email = "bh01@mail.aub.edu"
-        student.role = "student"
+        student.role = "player"
         student.save()
 
         extra_users = []
@@ -54,7 +54,7 @@ class Command(BaseCommand):
             user.first_name = first_name
             user.last_name = last_name
             user.email = f"{first_name.lower()}@mail.aub.edu"
-            user.role = "student"
+            user.role = "player"
             user.save()
             extra_users.append(user)
 

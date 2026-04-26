@@ -24,8 +24,9 @@
     <div class="login-title">Create Account</div>
 
     <div class="role-tabs">
-      <button type="button" class="role-tab {% if role == 'student' %}active{% endif %}" onclick="setRole('student',this)">Player</button>
+      <button type="button" class="role-tab {% if role == 'player' %}active{% endif %}" onclick="setRole('player',this)">Player</button>
       <button type="button" class="role-tab {% if role == 'coach' %}active{% endif %}" onclick="setRole('coach',this)">Coach</button>
+      <button type="button" class="role-tab {% if role == 'manager' %}active{% endif %}" onclick="setRole('manager',this)">Manager</button>
     </div>
     {% if messages %}
       <div class="toast-stack login-toast-stack" data-toast-stack>

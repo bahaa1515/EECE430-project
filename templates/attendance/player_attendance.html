@@ -129,4 +129,46 @@
   <span class="page-btn disabled">Next</span>
   {% endif %}
 </div>
+
+{% if who_is_attending %}
+<div class="page-header-row" style="margin-top:28px;">
+  <div>
+    <h2 class="page-header" style="font-size:18px;">Who is attending &mdash; upcoming sessions</h2>
+    <p class="page-subtitle">Team RSVP responses for the next upcoming sessions.</p>
+  </div>
+</div>
+{% for item in who_is_attending %}
+<div class="card" style="margin-bottom:14px;">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+    <div>
+      <strong>{{ item.match.title }}</strong>
+      <span class="match-meta" style="margin-left:10px;">{{ item.match.date|date:"D, M d | g:i A" }}</span>
+    </div>
+    <span class="status-badge status-{{ item.match.status|slugify }}">{{ item.match.get_status_display }}</span>
+  </div>
+  <table style="width:100%;border-collapse:collapse;font-size:13px;">
+    <thead>
+      <tr>
+        <th style="text-align:left;padding:6px 10px;background:#f9fafb;border-bottom:1px solid var(--border);">Player</th>
+        <th style="text-align:left;padding:6px 10px;background:#f9fafb;border-bottom:1px solid var(--border);">Response</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in item.rows %}
+      <tr>
+        <td style="padding:6px 10px;border-bottom:1px solid var(--border);">{{ row.name }}</td>
+        <td style="padding:6px 10px;border-bottom:1px solid var(--border);">
+          {% if row.response == 'Available' %}<span style="color:#16a34a;font-weight:600;">Available</span>
+          {% elif row.response == 'Unavailable' %}<span style="color:#dc2626;font-weight:600;">Unavailable</span>
+          {% else %}<span style="color:#6b7280;">No response</span>{% endif %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="2" style="padding:10px;color:#6b7280;text-align:center;">No players on the roster yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endfor %}
+{% endif %}
 {% endblock %}

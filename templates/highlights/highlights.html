@@ -86,8 +86,8 @@
 </div>
 {% endif %}
 
-{% if request.user.is_coach %}
-<div id="highlight-editor" class="form-page-card editor-panel {% if open_highlight_editor %}is-open{% endif %}" style="margin-top:20px;">
+{% if request.user.is_staff_role %}
+<div class="form-page-card" style="margin-top:20px;">
   <div class="section-header">
     <div>
       <h2 class="section-title">Manage Highlight</h2>

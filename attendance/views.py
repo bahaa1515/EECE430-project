@@ -177,7 +177,7 @@ def _attendance_totals_for_user(user):
 
 @login_required
 def attendance_view(request):
-    if request.user.is_coach():
+    if request.user.is_staff_role():
         return coach_attendance(request)
     return player_attendance(request)
 
@@ -187,6 +187,32 @@ def player_attendance(request):
     totals = _attendance_totals_for_user(request.user)
     records = totals["records"]
     records_by_match = {record.match_id: record for record in records}
+
+    # Build "who is attending" data for upcoming matches so all roles can see it
+    upcoming = Match.objects.filter(
+        status=Match.STATUS_UPCOMING,
+        date__gte=timezone.now(),
+    ).order_by("date")[:5]
+    team_players = list(
+        CustomUser.objects.filter(role=CustomUser.ROLE_PLAYER, is_active=True)
+        .order_by("first_name", "last_name")
+    )
+    who_is_attending = []
+    for m in upcoming:
+        recs = {
+            r.player_id: r.response
+            for r in AttendanceRecord.objects.filter(match=m, player__in=team_players)
+        }
+        who_is_attending.append({
+            "match": m,
+            "rows": [
+                {
+                    "name": p.get_full_name() or p.username,
+                    "response": recs.get(p.id, AttendanceRecord.RESPONSE_NO_RESPONSE),
+                }
+                for p in team_players
+            ],
+        })
 
     filter_type = request.GET.get("filter", "").strip()
     query = request.GET.get("q", "").strip()
@@ -240,6 +266,7 @@ def player_attendance(request):
             "filter_type": filter_type,
             "calendar_events": json.dumps(calendar_events),
             "querystring": _build_querystring(request.GET, exclude={"page"}),
+            "who_is_attending": who_is_attending,
             "active": "attendance",
         },
     )
@@ -396,7 +423,7 @@ def coach_attendance(request):
 
     students = list(
         CustomUser.objects.filter(
-            role=CustomUser.ROLE_STUDENT,
+            role=CustomUser.ROLE_PLAYER,
             is_active=True,
         ).order_by("first_name", "last_name", "username")
     )
@@ -540,8 +567,8 @@ def mark_attendance(request, match_id):
     response = request.POST.get("response") or request.POST.get("status")
     next_url = request.POST.get("next") or reverse("attendance")
 
-    if request.user.is_coach():
-        messages.error(request, "Coach attendance is managed from the team attendance page.")
+    if request.user.is_staff_role():
+        messages.error(request, "Staff attendance is managed from the team attendance page.")
         return redirect(next_url)
 
     valid_responses = {choice for choice, _ in AttendanceRecord.RESPONSE_CHOICES}
@@ -580,7 +607,7 @@ def update_match_attendance(request, match_id):
 
     students = list(
         CustomUser.objects.filter(
-            role=CustomUser.ROLE_STUDENT,
+            role=CustomUser.ROLE_PLAYER,
             is_active=True,
         )
     )
@@ -650,6 +677,9 @@ def match_create(request):
 @coach_required
 def match_edit(request, match_id):
     match = get_object_or_404(Match, pk=match_id)
+    if match.status == Match.STATUS_COMPLETED:
+        messages.error(request, f'"{match.title}" has already been played and cannot be modified.')
+        return redirect(f"{reverse('attendance')}?match={match.pk}")
     previous_status = match.status
     form = MatchForm(request.POST or None, instance=match)
     if request.method == "POST" and form.is_valid():
@@ -682,6 +712,9 @@ def match_edit(request, match_id):
 @coach_required
 def match_delete(request, match_id):
     match = get_object_or_404(Match, pk=match_id)
+    if match.status == Match.STATUS_COMPLETED:
+        messages.error(request, f'"{match.title}" has already been played and cannot be deleted.')
+        return redirect(f"{reverse('attendance')}?match={match.pk}")
     if request.method == "POST":
         title = match.title
         match.delete()

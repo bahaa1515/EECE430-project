@@ -5,7 +5,7 @@
     <h1 class="page-header">Team Roster</h1>
     <p class="page-subtitle">Manage starters, substitutes, linked player accounts, and clean role changes from one page.</p>
   </div>
-  {% if request.user.is_coach %}
+  {% if request.user.is_staff_role %}
   <a href="{% url 'player_add' %}" class="btn btn-blue">Add Player</a>
   {% endif %}
 </div>
@@ -58,7 +58,7 @@
       </div>
       <div class="player-card-actions">
         <a href="{% url 'player_detail' player.id %}" class="btn btn-primary btn-sm">View</a>
-        {% if request.user.is_coach %}
+        {% if request.user.is_staff_role %}
         <a href="{% url 'player_edit' player.id %}" class="btn btn-primary btn-sm">Edit</a>
         <form method="post" action="{% url 'demote_player' player.id %}">{% csrf_token %}<button type="submit" class="btn btn-primary btn-sm">Demote</button></form>
         <a href="{% url 'swap_starter' player.id %}" class="btn btn-blue btn-sm">Swap</a>
@@ -116,7 +116,7 @@
       </div>
       <div class="player-card-actions">
         <a href="{% url 'player_detail' player.id %}" class="btn btn-primary btn-sm">View</a>
-        {% if request.user.is_coach %}
+        {% if request.user.is_staff_role %}
         <a href="{% url 'player_edit' player.id %}" class="btn btn-primary btn-sm">Edit</a>
         <form method="post" action="{% url 'promote_player' player.id %}">{% csrf_token %}<button type="submit" class="btn btn-green btn-sm">Promote</button></form>
         <a href="{% url 'player_deactivate' player.id %}" class="btn btn-red btn-sm">Deactivate</a>
@@ -129,7 +129,7 @@
   {% endfor %}
 </div>
 
-{% if request.user.is_coach and inactive_players %}
+{% if request.user.is_staff_role and inactive_players %}
 <div class="section-label">Inactive Players</div>
 <div class="card">
   <div class="table-responsive">
